@@ -268,19 +268,30 @@
     // face-api.js: โหลดโมเดลตรวจจับ/เทียบใบหน้าจริง (ทำงานในเบราว์เซอร์ ไม่ต้องมีเซิร์ฟเวอร์ AI แยก)
     // ก่อนหน้านี้ปุ่มสแกนหน้าแค่เปิดกล้องรอ 3 วิแล้วเช็คชื่อผ่านเลย ไม่มีการเทียบใบหน้าจริง
     // ที่แก้รอบนี้: ดึงรูปที่ลงทะเบียนไว้ (Students.ImageDataBase64) มาคำนวณ descriptor แล้วเทียบกับใบหน้าสดจากกล้อง
+    // เปลี่ยนมาใช้ CDN แบบ npm (เร็ว/เสถียรกว่า cdn.jsdelivr.net/gh/... ที่พร็อกซี GitHub ตรงๆ ซึ่งบางเครือข่ายบล็อกหรือช้ามาก)
     // ===================================================
-    const FACE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+    const FACE_MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
     const FACE_MATCH_THRESHOLD = 0.5; // ยิ่งน้อยยิ่งเข้มงวด ปกติ 0.4-0.6
+    const FACE_MODEL_LOAD_TIMEOUT_MS = 20000; // กันไม่ให้ค้างรอไม่มีที่สิ้นสุดถ้าเน็ต/CDN มีปัญหา
     let faceModelsLoaded = false;
     let faceModelsLoading = null;
     function ensureFaceModelsLoaded() {
       if (faceModelsLoaded) return Promise.resolve();
       if (faceModelsLoading) return faceModelsLoading;
-      faceModelsLoading = Promise.all([
+      const loadPromise = Promise.all([
         faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL),
         faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODEL_URL),
         faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODEL_URL)
       ]).then(() => { faceModelsLoaded = true; });
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('โหลดระบบตรวจจับใบหน้าช้าเกินไป (เช็คอินเทอร์เน็ต หรือเครือข่ายอาจบล็อก CDN)')), FACE_MODEL_LOAD_TIMEOUT_MS);
+      });
+
+      faceModelsLoading = Promise.race([loadPromise, timeoutPromise]).catch((err) => {
+        faceModelsLoading = null; // ให้ลองใหม่ได้ในครั้งถัดไปแทนที่จะติดค้างว่า "กำลังโหลด" ตลอดไป
+        throw err;
+      });
       return faceModelsLoading;
     }
     window.addEventListener('load', () => { ensureFaceModelsLoaded().catch(() => {}); });
@@ -474,7 +485,7 @@
       if (!currentUser) return;
       const statusEl = document.getElementById('scan-status');
       try {
-        Swal.fire({ title: 'กำลังเตรียมระบบตรวจจับใบหน้า...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        Swal.fire({ title: 'กำลังโหลดระบบตรวจจับใบหน้า', text: 'ครั้งแรกอาจใช้เวลาสักครู่ (ประมาณ 5-10 วินาที) กรุณารอ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
         await ensureFaceModelsLoaded();
 
         const studentId = currentUser.student_id || currentUser.id;
@@ -506,7 +517,11 @@
         verifyLiveFace(video, currentUser.faceDescriptor);
       } catch (e) {
         Swal.close();
-        Swal.fire('เปิดกล้องไม่สำเร็จ', 'กรุณาอนุญาตให้เว็บไซต์เข้าถึงกล้องเพื่อเช็คชื่อด้วยใบหน้า', 'error');
+        if (e && e.message && e.message.includes('โหลดระบบตรวจจับใบหน้าช้าเกินไป')) {
+          Swal.fire('โหลดระบบตรวจจับใบหน้าไม่สำเร็จ', 'เช็คสัญญาณอินเทอร์เน็ต หรือเครือข่ายนี้อาจบล็อกการเชื่อมต่อ CDN กรุณาลองใหม่อีกครั้ง (ถ้ายังไม่ได้ ลองเปลี่ยนเครือข่าย เช่น ใช้ 4G/5G แทน WiFi ของโรงเรียน)', 'error');
+        } else {
+          Swal.fire('เปิดกล้องไม่สำเร็จ', 'กรุณาอนุญาตให้เว็บไซต์เข้าถึงกล้องเพื่อเช็คชื่อด้วยใบหน้า', 'error');
+        }
         statusEl.classList.add('hidden');
       }
     }
