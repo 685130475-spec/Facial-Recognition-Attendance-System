@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Sarabun', sans-serif; }
@@ -112,78 +113,83 @@
     </div>
    </div>
 
-   <div id="page-dashboard" class="page flex-col h-full bg-slate-900 text-white">
-    <nav class="bg-slate-800/90 border-b border-slate-700/50 px-4 py-3 flex items-center justify-between">
+   <div id="page-dashboard" class="page flex-col h-full bg-sky-50 text-slate-800">
+    <nav class="bg-white border-b border-sky-100 px-4 py-3 flex items-center justify-between shadow-sm">
      <div class="flex items-center gap-2">
       <div class="w-8 h-8 bg-gradient-to-br from-sky-400 to-blue-500 rounded-lg flex items-center justify-center">
        <i data-lucide="scan-face" class="w-4 h-4 text-white"></i>
       </div>
-      <span class="font-bold text-sm text-white">ระบบเช็คชื่อ - อาจารย์</span>
+      <span class="font-bold text-sm text-slate-800">ระบบเช็คชื่อ - อาจารย์</span>
      </div>
-     <button id="btn-logout" class="text-sm text-slate-400 hover:text-sky-300 flex items-center gap-1 transition-colors"> 
+     <button id="btn-logout" class="text-sm text-slate-500 hover:text-sky-500 flex items-center gap-1 transition-colors"> 
       <i data-lucide="log-out" class="w-4 h-4"></i> ออก 
      </button>
     </nav>
     
-    <div class="flex border-b border-slate-700/50 bg-slate-800/50 px-4">
-     <button class="tab-btn active px-4 py-3 text-sm font-medium border-b-2 border-sky-400 text-sky-400 transition-all" data-tab="dashboard">แดชบอร์ด</button> 
-     <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-sky-300 transition-colors" data-tab="manage">จัดการข้อมูล</button> 
-     <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-sky-300 transition-colors" data-tab="history">ประวัติ</button>
+    <div class="flex border-b border-sky-100 bg-white px-4">
+     <button class="tab-btn active px-4 py-3 text-sm font-medium border-b-2 border-sky-400 text-sky-500 transition-all" data-tab="dashboard">แดชบอร์ด</button> 
+     <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-sky-400 transition-colors" data-tab="manage">จัดการข้อมูล</button> 
+     <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-sky-400 transition-colors" data-tab="history">ประวัติ</button>
     </div>
      
     <div id="tab-dashboard" class="tab-content flex-1 overflow-auto p-4 space-y-4">
      <div class="grid grid-cols-2 gap-3">
-      <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
+      <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
        <div class="flex items-center gap-2 mb-1">
         <i data-lucide="users" class="w-4 h-4 text-sky-400"></i>
-        <span class="text-xs text-slate-400 font-medium">นักเรียนทั้งหมด</span>
+        <span class="text-xs text-slate-500 font-medium">นักเรียนทั้งหมด</span>
        </div>
-       <p id="stat-total" class="text-2xl font-bold text-white tracking-tight">0</p>
+       <p id="stat-total" class="text-2xl font-bold text-slate-800 tracking-tight">0</p>
       </div>
-      <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
+      <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
        <div class="flex items-center gap-2 mb-1">
-        <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
-        <span class="text-xs text-slate-400 font-medium">มาเรียนวันนี้</span>
+        <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
+        <span class="text-xs text-slate-500 font-medium">มาเรียนวันนี้</span>
        </div>
-       <p id="stat-present" class="text-2xl font-bold text-green-400 tracking-tight">0</p>
+       <p id="stat-present" class="text-2xl font-bold text-green-500 tracking-tight">0</p>
       </div>
-      <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
+      <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
        <div class="flex items-center gap-2 mb-1">
-        <i data-lucide="x-circle" class="w-4 h-4 text-rose-400"></i>
-        <span class="text-xs text-slate-400 font-medium">ขาดเรียน</span>
+        <i data-lucide="x-circle" class="w-4 h-4 text-rose-500"></i>
+        <span class="text-xs text-slate-500 font-medium">ขาดเรียน</span>
        </div>
-       <p id="stat-absent" class="text-2xl font-bold text-rose-400 tracking-tight">0</p>
+       <p id="stat-absent" class="text-2xl font-bold text-rose-500 tracking-tight">0</p>
       </div>
-      <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
+      <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
        <div class="flex items-center gap-2 mb-1">
-        <i data-lucide="clock" class="w-4 h-4 text-amber-400"></i>
-        <span class="text-xs text-slate-400 font-medium">มาสาย</span>
+        <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i>
+        <span class="text-xs text-slate-500 font-medium">มาสาย</span>
        </div>
-       <p id="stat-late" class="text-2xl font-bold text-amber-400 tracking-tight">0</p>
+       <p id="stat-late" class="text-2xl font-bold text-amber-500 tracking-tight">0</p>
       </div>
-      <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm col-span-2">
+      <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm col-span-2">
        <div class="flex items-center gap-2 mb-1">
-        <i data-lucide="file-text" class="w-4 h-4 text-orange-400"></i>
-        <span class="text-xs text-orange-400 font-medium">ลาวันนี้ (ป่วย/กิจ)</span>
+        <i data-lucide="file-text" class="w-4 h-4 text-orange-500"></i>
+        <span class="text-xs text-orange-500 font-medium">ลาวันนี้ (ป่วย/กิจ)</span>
        </div>
-       <p id="stat-leave" class="text-2xl font-bold text-orange-400 tracking-tight">0</p>
+       <p id="stat-leave" class="text-2xl font-bold text-orange-500 tracking-tight">0</p>
       </div>
      </div>
      
-     <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
-      <div class="flex items-center justify-between mb-3">
-       <h3 class="font-semibold text-sm text-slate-200 flex items-center gap-2">
-        <i data-lucide="table" class="w-4 h-4 text-sky-400"></i>รายชื่อนักเรียนที่เช็คชื่อวันนี้ (ทั้งหมด)
+     <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+       <h3 class="font-semibold text-sm text-slate-700 flex items-center gap-2">
+        <i data-lucide="table" class="w-4 h-4 text-sky-400"></i>รายชื่อนักเรียนที่เช็คชื่อวันนี้
        </h3>
        <div class="flex items-center gap-2">
         <span id="dashboard-clock" class="text-xs text-slate-400 font-mono">00:00:00</span>
         <button id="btn-refresh-log" class="px-2.5 py-1 bg-sky-500 hover:bg-sky-600 text-white rounded-lg text-xs font-semibold transition-all">🔄 รีเฟรช</button>
        </div>
       </div>
+      <div class="mb-3">
+       <select id="log-subject-filter" class="w-full px-3 py-2 bg-sky-50 border border-sky-200 rounded-lg text-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-sky-400/50">
+        <option value="">แยกตามวิชา: ทั้งหมด</option>
+       </select>
+      </div>
       <div class="overflow-x-auto">
        <table class="w-full text-left border-collapse text-xs">
         <thead>
-         <tr class="text-slate-400 border-b border-slate-700">
+         <tr class="text-slate-500 border-b border-sky-100">
           <th class="p-2">รหัส</th>
           <th class="p-2">ชื่อ-นามสกุล</th>
           <th class="p-2">ชั้นเรียน</th>
@@ -193,7 +199,7 @@
          </tr>
         </thead>
         <tbody id="attendance-log-table">
-         <tr><td colspan="6" class="p-4 text-center text-slate-500 italic">ยังไม่มีข้อมูลวันนี้</td></tr>
+         <tr><td colspan="6" class="p-4 text-center text-slate-400 italic">ยังไม่มีข้อมูลวันนี้</td></tr>
         </tbody>
        </table>
       </div>
@@ -201,46 +207,46 @@
     </div> 
 
     <div id="tab-manage" class="tab-content flex-1 overflow-auto p-4 space-y-4 hidden">
-     <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
-      <h3 class="font-semibold text-sm text-slate-200 mb-3 flex items-center gap-2">
+     <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
+      <h3 class="font-semibold text-sm text-slate-700 mb-3 flex items-center gap-2">
        <i data-lucide="user-plus" class="w-4 h-4 text-sky-400"></i>เพิ่มนักเรียน
       </h3>
       <div class="space-y-3">
-       <input id="add-id" type="text" placeholder="รหัสนักเรียน" class="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-transparent transition-all"> 
-       <input id="add-name" type="text" placeholder="ชื่อ-นามสกุล" class="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-transparent transition-all"> 
-       <select id="add-class" class="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-transparent transition-all">
-        <option value="" class="bg-slate-800 text-slate-400">เลือกชั้นเรียน</option> 
-        <option class="bg-slate-800">ปวส.2/7 ก1</option>
-        <option class="bg-slate-800">ปวส.2/7 ก2</option>
+       <input id="add-id" type="text" placeholder="รหัสนักเรียน" class="w-full px-3 py-2 bg-sky-50 border border-sky-200 rounded-lg text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-transparent transition-all"> 
+       <input id="add-name" type="text" placeholder="ชื่อ-นามสกุล" class="w-full px-3 py-2 bg-sky-50 border border-sky-200 rounded-lg text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-transparent transition-all"> 
+       <select id="add-class" class="w-full px-3 py-2 bg-sky-50 border border-sky-200 rounded-lg text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-transparent transition-all">
+        <option value="">เลือกชั้นเรียน</option> 
+        <option>ปวส.2/7 ก1</option>
+        <option>ปวส.2/7 ก2</option>
        </select>
       
        <button id="btn-add-student" class="w-full py-2 bg-sky-500 text-white rounded-lg font-medium text-sm hover:bg-sky-600 transition-all">บันทึกข้อมูล</button>
       </div>
      </div> 
 
-     <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
-      <h3 class="font-semibold text-sm text-slate-200 mb-1 flex items-center gap-2">
+     <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
+      <h3 class="font-semibold text-sm text-slate-700 mb-1 flex items-center gap-2">
        <i data-lucide="list" class="w-4 h-4 text-sky-400"></i>รายชื่อนักเรียน
       </h3>
-      <p class="text-xs text-slate-500 mb-3">แตะปุ่มด้านขวาของแต่ละคนเพื่อบันทึกสถานะย้อนหลัง (มาสาย / ลา / ขาดเรียน) โดยไม่ต้องสแกนหน้า</p>
+      <p class="text-xs text-slate-400 mb-3">แตะปุ่มด้านขวาของแต่ละคนเพื่อบันทึกสถานะย้อนหลัง (มาเรียน / มาสาย / ลา / ขาดเรียน) โดยไม่ต้องสแกนหน้า</p>
       <div id="student-list" class="space-y-2 text-sm max-h-64 overflow-auto pr-1">
-       <p class="text-slate-500 text-center py-6 italic">ยังไม่มีข้อมูลนักเรียน</p>
+       <p class="text-slate-400 text-center py-6 italic">ยังไม่มีข้อมูลนักเรียน</p>
       </div>
      </div>
     </div> 
 
     <div id="tab-history" class="tab-content flex-1 overflow-auto p-4 space-y-4 hidden">
-     <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
+     <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
       <div class="flex items-center justify-between mb-3">
-       <h3 class="font-semibold text-sm text-slate-200 flex items-center gap-2">
+       <h3 class="font-semibold text-sm text-slate-700 flex items-center gap-2">
         <i data-lucide="history" class="w-4 h-4 text-sky-400"></i>ประวัติการเช็คชื่อ (ทุกวัน)
        </h3>
-       <button id="btn-refresh-history" class="text-xs text-sky-400 hover:text-sky-300 flex items-center gap-1">
+       <button id="btn-refresh-history" class="text-xs text-sky-500 hover:text-sky-400 flex items-center gap-1">
         <i data-lucide="refresh-cw" class="w-3 h-3"></i>รีเฟรช
        </button>
       </div>
       <div id="history-list" class="space-y-2 text-sm max-h-96 overflow-auto pr-1">
-       <p class="text-slate-500 text-center py-6 italic">ยังไม่มีประวัติ</p>
+       <p class="text-slate-400 text-center py-6 italic">ยังไม่มีประวัติ</p>
       </div>
      </div>
     </div>
@@ -257,6 +263,60 @@
     let cameraStream = null;
     let selectedGroup = '';
     let selectedSubject = '';
+
+    // ===================================================
+    // face-api.js: โหลดโมเดลตรวจจับ/เทียบใบหน้าจริง (ทำงานในเบราว์เซอร์ ไม่ต้องมีเซิร์ฟเวอร์ AI แยก)
+    // ก่อนหน้านี้ปุ่มสแกนหน้าแค่เปิดกล้องรอ 3 วิแล้วเช็คชื่อผ่านเลย ไม่มีการเทียบใบหน้าจริง
+    // ที่แก้รอบนี้: ดึงรูปที่ลงทะเบียนไว้ (Students.ImageDataBase64) มาคำนวณ descriptor แล้วเทียบกับใบหน้าสดจากกล้อง
+    // ===================================================
+    const FACE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+    const FACE_MATCH_THRESHOLD = 0.5; // ยิ่งน้อยยิ่งเข้มงวด ปกติ 0.4-0.6
+    let faceModelsLoaded = false;
+    let faceModelsLoading = null;
+    function ensureFaceModelsLoaded() {
+      if (faceModelsLoaded) return Promise.resolve();
+      if (faceModelsLoading) return faceModelsLoading;
+      faceModelsLoading = Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODEL_URL)
+      ]).then(() => { faceModelsLoaded = true; });
+      return faceModelsLoading;
+    }
+    window.addEventListener('load', () => { ensureFaceModelsLoaded().catch(() => {}); });
+
+    // ดึงรูปใบหน้าที่ลงทะเบียนไว้ของนักเรียนคนนี้จาก Students.ImageDataBase64
+    function fetchRegisteredFacePhoto(studentId) {
+      return new Promise((resolve) => {
+        window.__facePhotoResolve = resolve;
+        const script = document.createElement('script');
+        script.src = `${SCRIPT_URL}?action=getFacePhoto&id=${encodeURIComponent(studentId)}&callback=__facePhotoCallback&_=${Date.now()}`;
+        document.body.appendChild(script);
+        document.body.removeChild(script);
+      });
+    }
+    window.__facePhotoCallback = function(response) {
+      if (window.__facePhotoResolve) {
+        window.__facePhotoResolve(response.status === 'success' && response.hasFace ? response.image : null);
+        window.__facePhotoResolve = null;
+      }
+    };
+
+    // คำนวณ face descriptor จากรูป base64 ที่ลงทะเบียนไว้ (ใช้เทียบกับใบหน้าสดจากกล้อง)
+    function computeDescriptorFromBase64(base64) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = async () => {
+          try {
+            const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+              .withFaceLandmarks().withFaceDescriptor();
+            resolve(detection ? detection.descriptor : null);
+          } catch (e) { resolve(null); }
+        };
+        img.onerror = () => resolve(null);
+        img.src = 'data:image/jpeg;base64,' + base64;
+      });
+    }
 
     function showPage(id) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -411,20 +471,88 @@
     });
 
     async function startFaceScan() {
+      if (!currentUser) return;
+      const statusEl = document.getElementById('scan-status');
       try {
+        Swal.fire({ title: 'กำลังเตรียมระบบตรวจจับใบหน้า...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        await ensureFaceModelsLoaded();
+
+        const studentId = currentUser.student_id || currentUser.id;
+
+        if (!currentUser.faceDescriptor) {
+          const photo = await fetchRegisteredFacePhoto(studentId);
+          if (!photo) {
+            Swal.close();
+            Swal.fire('ยังไม่ได้ลงทะเบียนใบหน้า', 'กรุณากดปุ่ม "ลงทะเบียนใบหน้า (ครั้งแรก)" ก่อนเช็คชื่อ', 'warning');
+            return;
+          }
+          const descriptor = await computeDescriptorFromBase64(photo);
+          if (!descriptor) {
+            Swal.close();
+            Swal.fire('รูปที่ลงทะเบียนไว้ใช้ไม่ได้', 'ระบบตรวจไม่พบใบหน้าในรูปที่ลงทะเบียนไว้ กรุณาลงทะเบียนใบหน้าใหม่ (มองกล้องตรงๆ แสงเพียงพอ)', 'error');
+            return;
+          }
+          currentUser.faceDescriptor = descriptor;
+        }
+
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        Swal.close();
         cameraStream = stream;
-        document.getElementById('camera-feed').srcObject = stream;
-        document.getElementById('scan-status').classList.remove('hidden');
-        setTimeout(() => completeAttendance(), 3000);
+        const video = document.getElementById('camera-feed');
+        video.srcObject = stream;
+        await new Promise((resolve) => { video.onloadedmetadata = resolve; });
+        statusEl.textContent = 'กำลังตรวจจับใบหน้า กรุณามองกล้องตรงๆ...';
+        statusEl.classList.remove('hidden');
+        verifyLiveFace(video, currentUser.faceDescriptor);
       } catch (e) {
-        document.getElementById('scan-status').classList.remove('hidden');
-        document.getElementById('scan-status').textContent = 'จำลองการสแกนใบหน้า...';
-        setTimeout(() => completeAttendance(), 2000);
+        Swal.close();
+        Swal.fire('เปิดกล้องไม่สำเร็จ', 'กรุณาอนุญาตให้เว็บไซต์เข้าถึงกล้องเพื่อเช็คชื่อด้วยใบหน้า', 'error');
+        statusEl.classList.add('hidden');
       }
     }
 
+    // ตรวจจับใบหน้าจากวิดีโอสดต่อเนื่อง แล้วเทียบกับ descriptor ที่ลงทะเบียนไว้ (1-ต่อ-1 verification)
+    let faceScanTimer = null;
+    function verifyLiveFace(video, referenceDescriptor) {
+      const statusEl = document.getElementById('scan-status');
+      let attempts = 0;
+      const maxAttempts = 20; // ~14 วินาที ก่อน timeout
+      clearInterval(faceScanTimer);
+      faceScanTimer = setInterval(async () => {
+        attempts++;
+        try {
+          const detection = await faceapi
+            .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+          if (detection) {
+            clearInterval(faceScanTimer);
+            statusEl.classList.add('hidden');
+            stopCamera();
+            const distance = faceapi.euclideanDistance(detection.descriptor, referenceDescriptor);
+            if (distance < FACE_MATCH_THRESHOLD) {
+              completeAttendance();
+            } else {
+              showScanResult('❌ ใบหน้าไม่ตรงกับข้อมูลที่ลงทะเบียนไว้ของบัญชีนี้ กรุณาลองใหม่ หรือแจ้งอาจารย์ตรวจสอบ', false);
+            }
+            return;
+          }
+        } catch (e) {
+          // ตรวจจับพลาดในเฟรมนี้ ลองเฟรมถัดไป
+        }
+
+        if (attempts >= maxAttempts) {
+          clearInterval(faceScanTimer);
+          statusEl.classList.add('hidden');
+          stopCamera();
+          showScanResult('❌ ตรวจไม่พบใบหน้า กรุณาอยู่ในที่แสงสว่างเพียงพอแล้วลองใหม่อีกครั้ง', false);
+        }
+      }, 700);
+    }
+
     function stopCamera() {
+      clearInterval(faceScanTimer);
       if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
       document.getElementById('camera-feed').srcObject = null;
     }
@@ -657,28 +785,49 @@
       const tbody = document.getElementById('attendance-log-table');
       if (!tbody) return;
 
-      if (!attendanceHistory || attendanceHistory.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-500 italic">ยังไม่มีข้อมูลวันนี้</td></tr>';
+      updateSubjectFilterOptions();
+
+      const selectedSubjectFilter = document.getElementById('log-subject-filter').value;
+      const rows = selectedSubjectFilter
+        ? attendanceHistory.filter(h => h.subject === selectedSubjectFilter)
+        : attendanceHistory;
+
+      if (!rows || rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">ยังไม่มีข้อมูลวันนี้</td></tr>';
         return;
       }
 
-      tbody.innerHTML = attendanceHistory.slice().reverse().map(h => {
-        let badge = 'bg-green-500/10 text-green-400';
-        if (h.status === 'มาสาย') badge = 'bg-amber-500/10 text-amber-400';
-        else if (h.status === 'ขาดเรียน') badge = 'bg-rose-500/10 text-rose-400';
-        else if (h.status && h.status.includes('ลา')) badge = 'bg-orange-500/10 text-orange-400';
+      tbody.innerHTML = rows.slice().reverse().map(h => {
+        let badge = 'bg-green-500/10 text-green-600';
+        if (h.status === 'มาสาย') badge = 'bg-amber-500/10 text-amber-600';
+        else if (h.status === 'ขาดเรียน') badge = 'bg-rose-500/10 text-rose-600';
+        else if (h.status && h.status.includes('ลา')) badge = 'bg-orange-500/10 text-orange-600';
 
         return `
-          <tr class="border-b border-slate-700/40 hover:bg-slate-700/20 transition-colors">
+          <tr class="border-b border-sky-50 hover:bg-sky-50/60 transition-colors">
             <td class="p-2 font-mono">${h.id || h.student_id || ''}</td>
             <td class="p-2">${h.name || ''}</td>
-            <td class="p-2 text-slate-400">${h.class || h.class_name || ''}</td>
-            <td class="p-2 text-sky-400">${h.subject || ''}</td>
-            <td class="p-2 text-slate-400">${h.time || ''}</td>
+            <td class="p-2 text-slate-500">${h.class || h.class_name || ''}</td>
+            <td class="p-2 text-sky-500">${h.subject || ''}</td>
+            <td class="p-2 text-slate-500">${h.time || ''}</td>
             <td class="p-2 text-center"><span class="${badge} text-[11px] px-2 py-0.5 rounded-full font-semibold">${h.status || ''}</span></td>
           </tr>`;
       }).join('');
     }
+
+    // เติมตัวเลือกวิชาในดรอปดาวน์ตัวกรอง ตามวิชาที่มีคนเช็คชื่อจริงวันนี้ (ไม่ซ้ำ) — คงค่าที่เลือกไว้เดิมถ้ายังมีอยู่
+    function updateSubjectFilterOptions() {
+      const select = document.getElementById('log-subject-filter');
+      const currentValue = select.value;
+      const subjects = [...new Set(attendanceHistory.map(h => h.subject).filter(Boolean))].sort();
+
+      select.innerHTML = '<option value="">แยกตามวิชา: ทั้งหมด</option>' +
+        subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+
+      if (subjects.includes(currentValue)) select.value = currentValue;
+    }
+
+    document.getElementById('log-subject-filter').addEventListener('change', renderAttendanceLogTable);
 
     // ปุ่ม "รีเฟรชข้อมูลล่าสุด" ในตาราง — ยิงคำขอใหม่ไปที่ Apps Script
     document.getElementById('btn-refresh-log').addEventListener('click', loadDataFromSheets);
@@ -721,15 +870,16 @@
           : '';
 
         return `
-        <div class="flex items-center justify-between bg-slate-700/30 rounded-lg px-3 py-2 gap-2">
+        <div class="flex items-center justify-between bg-sky-50 rounded-lg px-3 py-2 gap-2 border border-sky-100">
           <div class="min-w-0">
-            <div><span class="text-sky-400 font-medium">${s.student_id}</span> <span class="text-white">${s.name}</span></div>
+            <div><span class="text-sky-500 font-medium">${s.student_id}</span> <span class="text-slate-800">${s.name}</span></div>
             <div class="flex items-center gap-2 mt-0.5">
-              <span class="text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">${s.class_name}</span>
+              <span class="text-xs text-slate-500 bg-white border border-sky-100 px-2 py-1 rounded">${s.class_name}</span>
               ${statusBadge}
             </div>
           </div>
           <div class="flex items-center gap-1 shrink-0">
+            <button class="px-2 py-1 text-[11px] rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500/20 font-medium transition-colors" onclick="markManualAttendance('${s.student_id}', '${s.name.replace(/'/g, "\\'")}', '${s.class_name}', 'มาเรียน')">มาเรียน</button>
             <button class="px-2 py-1 text-[11px] rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 font-medium transition-colors" onclick="markManualAttendance('${s.student_id}', '${s.name.replace(/'/g, "\\'")}', '${s.class_name}', 'มาสาย')">มาสาย</button>
             <button class="px-2 py-1 text-[11px] rounded-lg bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 font-medium transition-colors" onclick="markManualAttendance('${s.student_id}', '${s.name.replace(/'/g, "\\'")}', '${s.class_name}', 'ลา')">ลา</button>
             <button class="px-2 py-1 text-[11px] rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 font-medium transition-colors" onclick="markManualAttendance('${s.student_id}', '${s.name.replace(/'/g, "\\'")}', '${s.class_name}', 'ขาดเรียน')">ขาด</button>
@@ -800,31 +950,31 @@
       
       container.innerHTML = fullHistoryRecords.slice().reverse().map(h => {
         let borderColor = 'border-green-500'; 
-        let statusColor = 'text-green-400';
+        let statusColor = 'text-green-600';
         
         if (h.status === 'มาสาย') { 
           borderColor = 'border-amber-500'; 
-          statusColor = 'text-amber-400'; 
+          statusColor = 'text-amber-600'; 
         } else if (h.status === 'ขาดเรียน') {
           borderColor = 'border-rose-500';
-          statusColor = 'text-rose-400';
+          statusColor = 'text-rose-600';
         } else if (h.status && h.status.includes('ลา')) { 
           borderColor = 'border-orange-500'; 
-          statusColor = 'text-orange-400'; 
+          statusColor = 'text-orange-600'; 
         }
         
-        const reasonHTML = h.reason ? `<div class="text-[11px] text-slate-400 mt-1 italic bg-slate-800 px-2 py-0.5 rounded inline-block">เหตุผล: ${h.reason}</div>` : '';
+        const reasonHTML = h.reason ? `<div class="text-[11px] text-slate-500 mt-1 italic bg-sky-50 px-2 py-0.5 rounded inline-block">เหตุผล: ${h.reason}</div>` : '';
 
         return `
-          <div class="flex items-center justify-between bg-slate-700/30 rounded-lg px-3 py-2 border-l-4 ${borderColor}">
+          <div class="flex items-center justify-between bg-sky-50 rounded-lg px-3 py-2 border-l-4 ${borderColor}">
             <div>
-              <div class="text-white font-medium">${h.name} <span class="text-xs text-slate-400">(${h.id || h.student_id})</span></div>
-              <div class="text-xs text-slate-400">${h.class || h.class_name} • ${h.date || ''}</div>
+              <div class="text-slate-800 font-medium">${h.name} <span class="text-xs text-slate-500">(${h.id || h.student_id})</span></div>
+              <div class="text-xs text-slate-500">${h.class || h.class_name} • ${h.date || ''}</div>
               ${reasonHTML}
             </div>
             <div class="text-right">
               <div class="font-semibold ${statusColor}">${h.status}</div>
-              <div class="text-xs text-slate-500">${h.time}</div>
+              <div class="text-xs text-slate-400">${h.time}</div>
             </div>
           </div>`;
       }).join('');
