@@ -171,16 +171,6 @@
      </div>
      
      <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
-      <h3 class="font-semibold text-sm text-slate-200 mb-3 flex items-center gap-1.5">
-       <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
-       เช็คชื่อล่าสุดวันนี้
-      </h3>
-      <div id="recent-list" class="space-y-2 text-sm text-slate-300">
-       <p class="text-slate-500 text-center py-6 italic">ยังไม่มีข้อมูลวันนี้</p>
-      </div>
-     </div>
-
-     <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
       <div class="flex items-center justify-between mb-3">
        <h3 class="font-semibold text-sm text-slate-200 flex items-center gap-2">
         <i data-lucide="table" class="w-4 h-4 text-sky-400"></i>รายชื่อนักเรียนที่เช็คชื่อวันนี้ (ทั้งหมด)
@@ -229,9 +219,10 @@
      </div> 
 
      <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
-      <h3 class="font-semibold text-sm text-slate-200 mb-3 flex items-center gap-2">
+      <h3 class="font-semibold text-sm text-slate-200 mb-1 flex items-center gap-2">
        <i data-lucide="list" class="w-4 h-4 text-sky-400"></i>รายชื่อนักเรียน
       </h3>
+      <p class="text-xs text-slate-500 mb-3">แตะปุ่มด้านขวาของแต่ละคนเพื่อบันทึกสถานะย้อนหลัง (มาสาย / ลา / ขาดเรียน) โดยไม่ต้องสแกนหน้า</p>
       <div id="student-list" class="space-y-2 text-sm max-h-64 overflow-auto pr-1">
        <p class="text-slate-500 text-center py-6 italic">ยังไม่มีข้อมูลนักเรียน</p>
       </div>
@@ -240,9 +231,14 @@
 
     <div id="tab-history" class="tab-content flex-1 overflow-auto p-4 space-y-4 hidden">
      <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
-      <h3 class="font-semibold text-sm text-slate-200 mb-3 flex items-center gap-2">
-       <i data-lucide="history" class="w-4 h-4 text-sky-400"></i>ประวัติการเช็คชื่อ
-      </h3>
+      <div class="flex items-center justify-between mb-3">
+       <h3 class="font-semibold text-sm text-slate-200 flex items-center gap-2">
+        <i data-lucide="history" class="w-4 h-4 text-sky-400"></i>ประวัติการเช็คชื่อ (ทุกวัน)
+       </h3>
+       <button id="btn-refresh-history" class="text-xs text-sky-400 hover:text-sky-300 flex items-center gap-1">
+        <i data-lucide="refresh-cw" class="w-3 h-3"></i>รีเฟรช
+       </button>
+      </div>
       <div id="history-list" class="space-y-2 text-sm max-h-96 overflow-auto pr-1">
        <p class="text-slate-500 text-center py-6 italic">ยังไม่มีประวัติ</p>
       </div>
@@ -277,6 +273,9 @@
         btn.classList.add('active', 'border-sky-400', 'text-sky-400');
         document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
         document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+        if (btn.dataset.tab === 'history') {
+          loadFullHistory();
+        }
       });
     });
 
@@ -346,7 +345,6 @@
         attendanceHistory = response.history || []; 
         updateDashboard();
         updateStudentList();
-        updateHistoryList(); 
       }
     };
 
@@ -512,11 +510,40 @@
       }
     };
 
+    // ===================================================
+    // ตารางคาบเรียน — ใช้ตัดสินว่าเช็คชื่อ "ตรงเวลา" หรือ "มาสาย" ตามคาบเรียนปัจจุบัน
+    // แต่ละคาบยาว 1 ชั่วโมง เริ่มนาทีที่ 30 ของแต่ละชั่วโมง ผ่อนผันให้เข้าได้ถึง 15 นาทีหลังเริ่มคาบ
+    // คาบ 8 (คาบสุดท้าย) เลิกเวลา 16:10 (สั้นกว่าคาบอื่นที่ยาวเต็มชั่วโมง)
+    // ===================================================
+    const CLASS_PERIODS = [
+      { period: 1, start: 8 * 60 + 30, lateAfter: 8 * 60 + 45, end: 9 * 60 + 30 },
+      { period: 2, start: 9 * 60 + 30, lateAfter: 9 * 60 + 45, end: 10 * 60 + 30 },
+      { period: 3, start: 10 * 60 + 30, lateAfter: 10 * 60 + 45, end: 11 * 60 + 30 },
+      { period: 4, start: 11 * 60 + 30, lateAfter: 11 * 60 + 45, end: 12 * 60 + 30 },
+      { period: 5, start: 12 * 60 + 30, lateAfter: 12 * 60 + 45, end: 13 * 60 + 30 },
+      { period: 6, start: 13 * 60 + 30, lateAfter: 13 * 60 + 45, end: 14 * 60 + 30 },
+      { period: 7, start: 14 * 60 + 30, lateAfter: 14 * 60 + 45, end: 15 * 60 + 30 },
+      { period: 8, start: 15 * 60 + 30, lateAfter: 15 * 60 + 45, end: 16 * 60 + 10 }
+    ];
+
+    function getPeriodAttendanceStatus() {
+      const now = new Date();
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+
+      if (nowMin < CLASS_PERIODS[0].start) return 'มาเรียน'; // มาก่อนคาบแรกเริ่ม ถือว่าตรงเวลา
+
+      for (const p of CLASS_PERIODS) {
+        if (nowMin >= p.start && nowMin < p.end) {
+          return nowMin <= p.lateAfter ? 'มาเรียน' : 'มาสาย';
+        }
+      }
+
+      return 'มาสาย'; // เลยเวลาคาบ 8 (หลัง 16:10) แล้ว ถือว่ามาสาย
+    }
+
     function completeAttendance() {
       if (!currentUser) return;
-      const now = new Date();
-      const isLate = now.getHours() >= 8 && now.getMinutes() > 30;
-      const statusText = isLate ? 'มาสาย' : 'มาเรียน';
+      const statusText = getPeriodAttendanceStatus();
       document.getElementById('scan-status').classList.add('hidden');
       stopCamera();
       const studentId = currentUser.student_id || currentUser.id;
@@ -607,38 +634,17 @@
       const totalStudents = allRecords.length; 
       const presentCount = attendanceHistory.filter(h => h.status === 'มาเรียน').length;
       const lateCount = attendanceHistory.filter(h => h.status === 'มาสาย').length;
-      const leaveCount = attendanceHistory.filter(h => h.status && h.status.includes('ลา')).length; 
-      const absentCount = Math.max(0, totalStudents - (presentCount + lateCount + leaveCount));
+      const leaveCount = attendanceHistory.filter(h => h.status && h.status.includes('ลา') && h.status !== 'ขาดเรียน').length;
+      const explicitAbsentCount = attendanceHistory.filter(h => h.status === 'ขาดเรียน').length;
+      const recordedIds = new Set(attendanceHistory.map(h => h.id || h.student_id));
+      const unrecordedCount = Math.max(0, totalStudents - recordedIds.size);
+      const absentCount = unrecordedCount + explicitAbsentCount;
 
       document.getElementById('stat-total').textContent = totalStudents;
       document.getElementById('stat-present').textContent = presentCount;
       document.getElementById('stat-late').textContent = lateCount;
       document.getElementById('stat-absent').textContent = absentCount;
       document.getElementById('stat-leave').textContent = leaveCount; // เพิ่มตัวเลขคนลาบนหน้า Dashboard
-
-      const recentContainer = document.getElementById('recent-list');
-      if (attendanceHistory.length === 0) {
-        recentContainer.innerHTML = '<p class="text-slate-500 text-center py-6 italic">ยังไม่มีข้อมูลวันนี้</p>';
-        return;
-      }
-
-      recentContainer.innerHTML = attendanceHistory.slice(-5).reverse().map(h => {
-        let badgeColor = 'bg-green-500/10 text-green-400';
-        if (h.status === 'มาสาย') badgeColor = 'bg-amber-500/10 text-amber-400';
-        else if (h.status && h.status.includes('ลา')) badgeColor = 'bg-orange-500/10 text-orange-400';
-
-        return `
-          <div class="flex items-center justify-between bg-slate-800 p-2.5 rounded-lg border border-slate-700/40">
-            <div>
-              <span class="text-white font-medium">${h.name}</span> 
-              <span class="text-xs text-slate-400">(${h.class})</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs px-2 py-0.5 rounded ${badgeColor}">${h.status}</span>
-              <span class="text-xs text-slate-400">${h.time}</span>
-            </div>
-          </div>`;
-      }).join('');
 
       renderAttendanceLogTable();
     }
@@ -659,6 +665,7 @@
       tbody.innerHTML = attendanceHistory.slice().reverse().map(h => {
         let badge = 'bg-green-500/10 text-green-400';
         if (h.status === 'มาสาย') badge = 'bg-amber-500/10 text-amber-400';
+        else if (h.status === 'ขาดเรียน') badge = 'bg-rose-500/10 text-rose-400';
         else if (h.status && h.status.includes('ลา')) badge = 'bg-orange-500/10 text-orange-400';
 
         return `
@@ -691,33 +698,116 @@
     }, 30000);
 
     function updateStudentList() {
-const students = allRecords.filter(r => r.type === "student");
-const container = document.getElementById("student-list");
-if (students.length === 0) {
-container.innerHTML = '<p class="text-slate-500 text-center py-4">ยังไม่มีข้อมูลนักเรียน</p>';
-return;
-}
-container.innerHTML = students.map(s => `
-<div class="flex items-center justify-between bg-slate-700/30 rounded-lg px-3 py-2">
-<div><span class="text-sky-400 font-medium">${s.student_id}</span> <span class="text-white">${s.name}</span></div>
-<span class="text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">${s.class_name}</span>
-</div>`).join("");
-}
+      const students = allRecords.filter(r => r.type === "student");
+      const container = document.getElementById("student-list");
+      if (students.length === 0) {
+        container.innerHTML = '<p class="text-slate-500 text-center py-4">ยังไม่มีข้อมูลนักเรียน</p>';
+        return;
+      }
 
-    function updateHistoryList() {
+      // เช็คว่าวันนี้มีบันทึกของนักเรียนคนไหนไปแล้วบ้าง (เอาบันทึกล่าสุดของแต่ละคน)
+      const todayStatusById = {};
+      attendanceHistory.forEach(h => { todayStatusById[h.id || h.student_id] = h; });
+
+      container.innerHTML = students.map(s => {
+        const todayRecord = todayStatusById[s.student_id];
+        const statusBadge = todayRecord
+          ? `<span class="text-[11px] px-2 py-0.5 rounded-full font-semibold ${
+              todayRecord.status === 'มาสาย' ? 'bg-amber-500/10 text-amber-400' :
+              todayRecord.status && todayRecord.status.includes('ลา') ? 'bg-orange-500/10 text-orange-400' :
+              todayRecord.status === 'ขาดเรียน' ? 'bg-rose-500/10 text-rose-400' :
+              'bg-green-500/10 text-green-400'
+            }">${todayRecord.status}</span>`
+          : '';
+
+        return `
+        <div class="flex items-center justify-between bg-slate-700/30 rounded-lg px-3 py-2 gap-2">
+          <div class="min-w-0">
+            <div><span class="text-sky-400 font-medium">${s.student_id}</span> <span class="text-white">${s.name}</span></div>
+            <div class="flex items-center gap-2 mt-0.5">
+              <span class="text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">${s.class_name}</span>
+              ${statusBadge}
+            </div>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button class="px-2 py-1 text-[11px] rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 font-medium transition-colors" onclick="markManualAttendance('${s.student_id}', '${s.name.replace(/'/g, "\\'")}', '${s.class_name}', 'มาสาย')">มาสาย</button>
+            <button class="px-2 py-1 text-[11px] rounded-lg bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 font-medium transition-colors" onclick="markManualAttendance('${s.student_id}', '${s.name.replace(/'/g, "\\'")}', '${s.class_name}', 'ลา')">ลา</button>
+            <button class="px-2 py-1 text-[11px] rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 font-medium transition-colors" onclick="markManualAttendance('${s.student_id}', '${s.name.replace(/'/g, "\\'")}', '${s.class_name}', 'ขาดเรียน')">ขาด</button>
+          </div>
+        </div>`;
+      }).join("");
+    }
+
+    // บันทึกสถานะให้นักเรียนโดยครู (ไม่ต้องสแกนหน้า) — เรียก action=checkIn เดิม ส่ง status ตามที่เลือก
+    function markManualAttendance(id, name, className, status) {
+      Swal.fire({
+        title: 'ยืนยันการบันทึก',
+        text: `บันทึกสถานะของ "${name}" เป็น "${status}" ใช่ไหม?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'ยืนยัน',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#0ea5e9'
+      }).then((result) => {
+        if (!result.isConfirmed) return;
+        Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        const script = document.createElement('script');
+        script.src = `${SCRIPT_URL}?action=checkIn&id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}&class=${encodeURIComponent(className)}&status=${encodeURIComponent(status)}&subject=${encodeURIComponent('บันทึกโดยครู')}&callback=manualMarkResponse&_=${Date.now()}`;
+        document.body.appendChild(script);
+        document.body.removeChild(script);
+      });
+    }
+
+    window.manualMarkResponse = function(response) {
+      Swal.close();
+      if (response.status === 'success') {
+        Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', timer: 1200, showConfirmButton: false });
+        loadDataFromSheets();
+      } else {
+        Swal.fire('บันทึกไม่สำเร็จ', response.message || 'กรุณาลองใหม่', 'error');
+      }
+    };
+
+    let fullHistoryRecords = [];
+
+    // โหลดประวัติการเช็คชื่อ/แจ้งลา "ทุกวัน" (ไม่จำกัดเฉพาะวันนี้) มาแสดงในแท็บ "ประวัติ"
+    function loadFullHistory() {
       const container = document.getElementById('history-list');
-      if (!attendanceHistory || attendanceHistory.length === 0) { 
+      container.innerHTML = '<p class="text-slate-500 text-center py-6 italic">กำลังโหลดข้อมูล...</p>';
+      const script = document.createElement('script');
+      script.src = `${SCRIPT_URL}?action=getAttendance&callback=fullHistoryResponse&_=${Date.now()}`;
+      document.body.appendChild(script);
+      document.body.removeChild(script);
+    }
+
+    window.fullHistoryResponse = function(response) {
+      if (response.status === 'success') {
+        fullHistoryRecords = response.data || [];
+        renderFullHistoryList();
+      } else {
+        document.getElementById('history-list').innerHTML = '<p class="text-rose-400 text-center py-6 italic">โหลดประวัติไม่สำเร็จ</p>';
+      }
+    };
+
+    document.getElementById('btn-refresh-history').addEventListener('click', loadFullHistory);
+
+    function renderFullHistoryList() {
+      const container = document.getElementById('history-list');
+      if (!fullHistoryRecords || fullHistoryRecords.length === 0) { 
         container.innerHTML = '<p class="text-slate-500 text-center py-6 italic">ยังไม่มีประวัติการแจ้งลาหรือเช็คชื่อ</p>'; 
         return; 
       }
       
-      container.innerHTML = attendanceHistory.slice().reverse().map(h => {
+      container.innerHTML = fullHistoryRecords.slice().reverse().map(h => {
         let borderColor = 'border-green-500'; 
         let statusColor = 'text-green-400';
         
         if (h.status === 'มาสาย') { 
           borderColor = 'border-amber-500'; 
           statusColor = 'text-amber-400'; 
+        } else if (h.status === 'ขาดเรียน') {
+          borderColor = 'border-rose-500';
+          statusColor = 'text-rose-400';
         } else if (h.status && h.status.includes('ลา')) { 
           borderColor = 'border-orange-500'; 
           statusColor = 'text-orange-400'; 
@@ -729,7 +819,7 @@ container.innerHTML = students.map(s => `
           <div class="flex items-center justify-between bg-slate-700/30 rounded-lg px-3 py-2 border-l-4 ${borderColor}">
             <div>
               <div class="text-white font-medium">${h.name} <span class="text-xs text-slate-400">(${h.id || h.student_id})</span></div>
-              <div class="text-xs text-slate-400">${h.class || h.class_name}</div>
+              <div class="text-xs text-slate-400">${h.class || h.class_name} • ${h.date || ''}</div>
               ${reasonHTML}
             </div>
             <div class="text-right">
