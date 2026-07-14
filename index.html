@@ -7,7 +7,6 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Sarabun', sans-serif; }
@@ -31,27 +30,136 @@
 
   <div id="app" class="h-full w-full flex flex-col">
    
- 
-     <div class="bg-white/90 backdrop-blur rounded-2xl p-6 border border-white/50 shadow-xl">
-      <div class="space-y-4">
-       <div>
-        <label for="global-user" class="block text-sm font-medium text-slate-600 mb-1">Username</label> 
-        <input id="global-user" type="text" max-length="60" placeholder="ชื่อ-นามสกุล" 
-               class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent transition-all">
-       </div>
-       <div>
-        <label for="global-pass" class="block text-sm font-medium text-slate-600 mb-1">Password</label> 
-        <input id="global-pass" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="9" placeholder="รหัสผ่าน" 
-               class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent transition-all">
-       </div>
-       <button id="btn-global-login" class="w-full mt-2 py-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-semibold text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-lg shadow-sky-500/20 active:scale-95"> 
-        เข้าสู่ระบบ
-       </button>
-      </div>
-     </div>
+    <!-- เริ่มต้นกล่องรายชื่ออาจารย์แยกแผนก (วางแทนที่ปุ่มเข้าสู่ระบบเดิม) -->
+<div class="w-full max-w-xl mx-auto mt-4 space-y-4 text-left">
+ <!-- แผนกวิชาสามัญ -->
+  <div>
+    <h3 class="text-xs font-bold text-slate-500 mb-1.5 border-b border-slate-200 pb-0.5">แผนกวิชาสามัญ</h3>
+    <div class="grid grid-cols-2 gap-2">
+      <button type="button" onclick="document.getElementById('face-upload-id').value='GEN01'; alert('เลือก อ.อารยา แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.อารยา อินชัน
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='GEN02'; alert('เลือก อ.บุญเชิด แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.บุญเชิด บุญธรรม
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='GEN03'; alert('เลือก อ.พนารัตน์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.พนารัตน์ รำขวัญ
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='GEN04'; alert('เลือก อ.ณิชชัยกุญช์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.ณิชชัยกุญช์ โลราช
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='GEN05'; alert('เลือก อ.กฤษณ์ชาณัฎฐ์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.กฤษณ์ชาณัฎฐ์ ผดุงรัตน์
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='GEN06'; alert('เลือก อ.ทิพรัตน์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.ทิพรัตน์ วรรณเสถียร์
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='GEN07'; alert('เลือก อ.รัญชนา แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.รัญชนา แก้วเทพ
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='GEN08'; alert('เลือก อ.ศิวพร แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.ศิวพร แพงผม
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='GEN09'; alert('เลือก อ.ปนัดดา แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.ปนัดดา อยู่รอง
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='GEN10'; alert('เลือก อ.ธีระพัฒน์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.ธีระพัฒน์ ด้วงแพง
+      </button>
     </div>
-   </div>
+  </div>
+  <!-- แผนกวิชาเทคโนโลยีธุรกิจดิจิทัล -->
+  <button type="button" onclick="document.getElementById('face-upload-id').value='DB01'; alert('เลือก อ.อัมพร แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.อัมพร เสือเดช
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='DB02'; alert('เลือก อ.ณิชานันท์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.ณิชานันท์ พิพัฒน์นพกร
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='DB03'; alert('เลือก อ.ชนินทร์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.ชนินทร์ พงษ์ประดิษฐ์
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='DB04'; alert('เลือก อ.ขนิษฐา แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.ขนิษฐา นันทโชติ
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='DB05'; alert('เลือก อ.ปิยะ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.ปิยะ สีตาชัย
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='DB06'; alert('เลือก อ.กุลธิดา แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.กุลธิดา สายบุญยงค์
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='DB07'; alert('เลือก อ.สุพัตรา แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.สุพัตรา จันทร์น้ำอ่าง
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='DB08'; alert('เลือก อ.ศศิวิมล แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.ศศิวิมล ถันชนนาง
+      </button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='DB09'; alert('เลือก อ.ภานุพงศ์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.ภานุพงศ์ ปันสอน
+      </button>
+<!-- แผนกวิชาบัญชี ตลาดและธุรกิจค้าปลีก  -->
+  <div>
+    <h3 class="text-xs font-bold text-slate-500 mb-1.5 border-b border-slate-200 pb-0.5">แผนกวิชาบัญชี ตลาดและธุรกิจค้าปลีก</h3>
+    <div class="grid grid-cols-2 gap-2">
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ACC11'; alert('เลือก อ.วชิราภรณ์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.วชิราภรณ์ ธีปะนะ</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ACC12'; alert('เลือก อ.อรวรรณ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.อรวรรณ สุดกล้า</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ACC13'; alert('เลือก อ.ขวัญดาว แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ขวัญดาว จันมลฑา</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ACC14'; alert('เลือก อ.สายฝน แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.สายฝน กะแก้ว</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ACC15'; alert('เลือก อ.จินตนา แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.จินตนา เตชัย</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ACC16'; alert('เลือก อ.กวิสรา แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.กวิสรา ศรีแก้ว</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ACC17'; alert('เลือก อ.สรวิชญ์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.สรวิชญ์ เงินดวง</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ACC18'; alert('เลือก อ.เสาวลักษณ์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.เสาวลักษณ์ ปานคำ</button>
+    </div>
+  </div>
 
+  <!-- แผนกวิชาช่างยนต์ -->
+  <div>
+    <h3 class="text-xs font-bold text-slate-500 mb-1.5 border-b border-slate-200 pb-0.5">แผนกวิชาช่างยนต์</h3>
+    <div class="grid grid-cols-2 gap-2">
+      <button type="button" onclick="document.getElementById('face-upload-id').value='AUTO01'; alert('เลือก อ.จักรพงษ์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.จักรพงษ์ แจ้งเมือง</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='AUTO02'; alert('เลือก อ.ณรงค์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ณรงค์  บุญพักตร์</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='AUTO03'; alert('เลือก อ.ประชา แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ประชา กัลปนารถ</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='AUTO04'; alert('เลือก อ.ไตรภพ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ไตรภพ ศรีสุวรรณ</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='AUTO05'; alert('เลือก อ.อนิรุทธ์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.อนิรุทธ์ กรูดไคร้</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='AUTO06'; alert('เลือก อ.ภูวดล แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ภูวดล เพ็ญนาดี</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='AUTO07'; alert('เลือก อ.เด่นพงษ์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.เด่นพงษ์ ไทยแป้น</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='AUTO08'; alert('เลือก อ.พงษ์พันธ์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.พงษ์พันธ์ แทนเทือก</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='AUTO09'; alert('เลือก อ.เพชรรัตน์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.เพชรรัตน์ ดวงแก้ว</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='AUTO10'; alert('เลือก อ.เผด็จ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.เผด็จ พึ่งพิณ</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='AUTO11'; alert('เลือก อ.ปคุณวศินท์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ปคุณวศินท์ เชียงชู</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='AUTO12'; alert('เลือก อ.สุเมธ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.สุเมธ ไชยวงค์</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='AUTO13'; alert('เลือก อ.อภิลักษณ์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.อภิลักษณ์ แซ่ตั้น</button>
+    </div>
+  </div>
+
+  <!-- แผนกวิชาช่างไฟฟ้าและอิเล็กทรอนิกส์ -->
+  <div>
+    <h3 class="text-xs font-bold text-slate-500 mb-1.5 border-b border-slate-200 pb-0.5">แผนกวิชาช่างไฟฟ้าและอิเล็กทรอนิกส์</h3>
+    <div class="grid grid-cols-2 gap-2">
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ELEC01'; alert('เลือก อ.ภูวดล แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ภูวดล จารุชาต</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ELEC02'; alert('เลือก อ.ชัยทัต แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ชัยทัต นาคเหล็ก</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ELEC03'; alert('เลือก อ.ทนงศักดิ์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ทนงศักดิ์ พรมงาม</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ELEC04'; alert('เลือก อ.วรุจิรา แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.วรุจิรา เลี้ยงไกรลาศ</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ELEC05'; alert('เลือก อ.ชวลิต แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ชวลิต โพธิ์สุข</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ELEC06'; alert('เลือก อ.โยธิน แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.โยธิน แก่งอิน</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ELEC07'; alert('เลือก อ.ชัชชลัย แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ชัชชลัย บุญทารมณ์</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ELEC08'; alert('เลือก อ.ภานุวัฒน์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ภานุวัฒน์ จันต๊ะภา</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ELEC09'; alert('เลือก อ.ศิริพัฒน์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ศิริพัฒน์ สุริยะวงค์</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ELEC10'; alert('เลือก อ.บุญตาล แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.บุญตาล ทองแห้ว</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ELEC11'; alert('เลือก อ.วัฒนา แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.วัฒนา คำมงคล</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ELEC12'; alert('เลือก อ.เมธาสิทธิ์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.เมธาสิทธิ์ ใสยิ่ง</button>
+      <button type="button" onclick="document.getElementById('face-upload-id').value='ELEC13'; alert('เลือก อ.วิภาวรรณ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.วิภาวรรณ เฟื้องฟู</button>
+    </div>
+  </div>
+ 
+  <div>
+    <h3 class="text-xs font-bold text-slate-500 mb-1.5 border-b border-slate-200 pb-0.5">แผนกวิชาสามัญ</h3>
+    <div class="grid grid-cols-2 gap-2">
+      <button type="button" onclick="document.getElementById('face-upload-id').value='T003'; alert('เลือก อ.กิตติพงษ์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">
+        อ.กิตติพงษ์ มั่นคง
+      </button>
+    </div>
+  </div>
+<!-- สิ้นสุดกล่องรายชื่ออาจารย์ -->
    <div id="page-scan" class="page flex-col items-center justify-center h-full p-6">
     <div class="w-full max-w-md text-center fade-in">
      <h2 class="text-xl font-bold text-slate-800 mb-2">เช็คชื่อด้วยเทคโนโลยีใบหน้า</h2>
@@ -104,83 +212,78 @@
     </div>
    </div>
 
-   <div id="page-dashboard" class="page flex-col h-full bg-sky-50 text-slate-800">
-    <nav class="bg-white border-b border-sky-100 px-4 py-3 flex items-center justify-between shadow-sm">
+   <div id="page-dashboard" class="page flex-col h-full bg-slate-900 text-white">
+    <nav class="bg-slate-800/90 border-b border-slate-700/50 px-4 py-3 flex items-center justify-between">
      <div class="flex items-center gap-2">
       <div class="w-8 h-8 bg-gradient-to-br from-sky-400 to-blue-500 rounded-lg flex items-center justify-center">
        <i data-lucide="scan-face" class="w-4 h-4 text-white"></i>
       </div>
-      <span class="font-bold text-sm text-slate-800">ระบบเช็คชื่อ - อาจารย์</span>
+      <span class="font-bold text-sm text-white">ระบบเช็คชื่อ - อาจารย์</span>
      </div>
-     <button id="btn-logout" class="text-sm text-slate-500 hover:text-sky-500 flex items-center gap-1 transition-colors"> 
+     <button id="btn-logout" class="text-sm text-slate-400 hover:text-sky-300 flex items-center gap-1 transition-colors"> 
       <i data-lucide="log-out" class="w-4 h-4"></i> ออก 
      </button>
     </nav>
     
-    <div class="flex border-b border-sky-100 bg-white px-4">
-     <button class="tab-btn active px-4 py-3 text-sm font-medium border-b-2 border-sky-400 text-sky-500 transition-all" data-tab="dashboard">แดชบอร์ด</button> 
-     <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-sky-400 transition-colors" data-tab="manage">จัดการข้อมูล</button> 
-     <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-sky-400 transition-colors" data-tab="history">ประวัติ</button>
+    <div class="flex border-b border-slate-700/50 bg-slate-800/50 px-4">
+     <button class="tab-btn active px-4 py-3 text-sm font-medium border-b-2 border-sky-400 text-sky-400 transition-all" data-tab="dashboard">แดชบอร์ด</button> 
+     <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-sky-300 transition-colors" data-tab="manage">จัดการข้อมูล</button> 
+     <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-sky-300 transition-colors" data-tab="history">ประวัติ</button>
     </div>
      
     <div id="tab-dashboard" class="tab-content flex-1 overflow-auto p-4 space-y-4">
      <div class="grid grid-cols-2 gap-3">
-      <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
+      <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
        <div class="flex items-center gap-2 mb-1">
         <i data-lucide="users" class="w-4 h-4 text-sky-400"></i>
-        <span class="text-xs text-slate-500 font-medium">นักเรียนทั้งหมด</span>
+        <span class="text-xs text-slate-400 font-medium">นักเรียนทั้งหมด</span>
        </div>
-       <p id="stat-total" class="text-2xl font-bold text-slate-800 tracking-tight">0</p>
+       <p id="stat-total" class="text-2xl font-bold text-white tracking-tight">0</p>
       </div>
-      <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
+      <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
        <div class="flex items-center gap-2 mb-1">
-        <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
-        <span class="text-xs text-slate-500 font-medium">มาเรียนวันนี้</span>
+        <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
+        <span class="text-xs text-slate-400 font-medium">มาเรียนวันนี้</span>
        </div>
-       <p id="stat-present" class="text-2xl font-bold text-green-500 tracking-tight">0</p>
+       <p id="stat-present" class="text-2xl font-bold text-green-400 tracking-tight">0</p>
       </div>
-      <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
+      <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
        <div class="flex items-center gap-2 mb-1">
-        <i data-lucide="x-circle" class="w-4 h-4 text-rose-500"></i>
-        <span class="text-xs text-slate-500 font-medium">ขาดเรียน</span>
+        <i data-lucide="x-circle" class="w-4 h-4 text-rose-400"></i>
+        <span class="text-xs text-slate-400 font-medium">ขาดเรียน</span>
        </div>
-       <p id="stat-absent" class="text-2xl font-bold text-rose-500 tracking-tight">0</p>
+       <p id="stat-absent" class="text-2xl font-bold text-rose-400 tracking-tight">0</p>
       </div>
-      <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
+      <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
        <div class="flex items-center gap-2 mb-1">
-        <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i>
-        <span class="text-xs text-slate-500 font-medium">มาสาย</span>
+        <i data-lucide="clock" class="w-4 h-4 text-amber-400"></i>
+        <span class="text-xs text-slate-400 font-medium">มาสาย</span>
        </div>
-       <p id="stat-late" class="text-2xl font-bold text-amber-500 tracking-tight">0</p>
+       <p id="stat-late" class="text-2xl font-bold text-amber-400 tracking-tight">0</p>
       </div>
-      <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm col-span-2">
+      <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm col-span-2">
        <div class="flex items-center gap-2 mb-1">
-        <i data-lucide="file-text" class="w-4 h-4 text-orange-500"></i>
-        <span class="text-xs text-orange-500 font-medium">ลาวันนี้ (ป่วย/กิจ)</span>
+        <i data-lucide="file-text" class="w-4 h-4 text-orange-400"></i>
+        <span class="text-xs text-orange-400 font-medium">ลาวันนี้ (ป่วย/กิจ)</span>
        </div>
-       <p id="stat-leave" class="text-2xl font-bold text-orange-500 tracking-tight">0</p>
+       <p id="stat-leave" class="text-2xl font-bold text-orange-400 tracking-tight">0</p>
       </div>
      </div>
      
-     <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
-      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-       <h3 class="font-semibold text-sm text-slate-700 flex items-center gap-2">
-        <i data-lucide="table" class="w-4 h-4 text-sky-400"></i>รายชื่อนักเรียนที่เช็คชื่อวันนี้
+     <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
+      <div class="flex items-center justify-between mb-3">
+       <h3 class="font-semibold text-sm text-slate-200 flex items-center gap-2">
+        <i data-lucide="table" class="w-4 h-4 text-sky-400"></i>รายชื่อนักเรียนที่เช็คชื่อวันนี้ (ทั้งหมด)
        </h3>
        <div class="flex items-center gap-2">
         <span id="dashboard-clock" class="text-xs text-slate-400 font-mono">00:00:00</span>
         <button id="btn-refresh-log" class="px-2.5 py-1 bg-sky-500 hover:bg-sky-600 text-white rounded-lg text-xs font-semibold transition-all">🔄 รีเฟรช</button>
        </div>
       </div>
-      <div class="mb-3">
-       <select id="log-subject-filter" class="w-full px-3 py-2 bg-sky-50 border border-sky-200 rounded-lg text-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-sky-400/50">
-        <option value="">แยกตามวิชา: ทั้งหมด</option>
-       </select>
-      </div>
       <div class="overflow-x-auto">
        <table class="w-full text-left border-collapse text-xs">
         <thead>
-         <tr class="text-slate-500 border-b border-sky-100">
+         <tr class="text-slate-400 border-b border-slate-700">
           <th class="p-2">รหัส</th>
           <th class="p-2">ชื่อ-นามสกุล</th>
           <th class="p-2">ชั้นเรียน</th>
@@ -190,7 +293,7 @@
          </tr>
         </thead>
         <tbody id="attendance-log-table">
-         <tr><td colspan="6" class="p-4 text-center text-slate-400 italic">ยังไม่มีข้อมูลวันนี้</td></tr>
+         <tr><td colspan="6" class="p-4 text-center text-slate-500 italic">ยังไม่มีข้อมูลวันนี้</td></tr>
         </tbody>
        </table>
       </div>
@@ -198,46 +301,46 @@
     </div> 
 
     <div id="tab-manage" class="tab-content flex-1 overflow-auto p-4 space-y-4 hidden">
-     <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
-      <h3 class="font-semibold text-sm text-slate-700 mb-3 flex items-center gap-2">
+     <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
+      <h3 class="font-semibold text-sm text-slate-200 mb-3 flex items-center gap-2">
        <i data-lucide="user-plus" class="w-4 h-4 text-sky-400"></i>เพิ่มนักเรียน
       </h3>
       <div class="space-y-3">
-       <input id="add-id" type="text" placeholder="รหัสนักเรียน" class="w-full px-3 py-2 bg-sky-50 border border-sky-200 rounded-lg text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-transparent transition-all"> 
-       <input id="add-name" type="text" placeholder="ชื่อ-นามสกุล" class="w-full px-3 py-2 bg-sky-50 border border-sky-200 rounded-lg text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-transparent transition-all"> 
-       <select id="add-class" class="w-full px-3 py-2 bg-sky-50 border border-sky-200 rounded-lg text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-transparent transition-all">
-        <option value="">เลือกชั้นเรียน</option> 
-        <option>ปวส.2/7 ก1</option>
-        <option>ปวส.2/7 ก2</option>
+       <input id="add-id" type="text" placeholder="รหัสนักเรียน" class="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-transparent transition-all"> 
+       <input id="add-name" type="text" placeholder="ชื่อ-นามสกุล" class="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-transparent transition-all"> 
+       <select id="add-class" class="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-transparent transition-all">
+        <option value="" class="bg-slate-800 text-slate-400">เลือกชั้นเรียน</option> 
+        <option class="bg-slate-800">ปวส.2/7 ก1</option>
+        <option class="bg-slate-800">ปวส.2/7 ก2</option>
        </select>
       
        <button id="btn-add-student" class="w-full py-2 bg-sky-500 text-white rounded-lg font-medium text-sm hover:bg-sky-600 transition-all">บันทึกข้อมูล</button>
       </div>
      </div> 
 
-     <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
-      <h3 class="font-semibold text-sm text-slate-700 mb-1 flex items-center gap-2">
+     <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
+      <h3 class="font-semibold text-sm text-slate-200 mb-1 flex items-center gap-2">
        <i data-lucide="list" class="w-4 h-4 text-sky-400"></i>รายชื่อนักเรียน
       </h3>
-      <p class="text-xs text-slate-400 mb-3">แตะปุ่มด้านขวาของแต่ละคนเพื่อบันทึกสถานะย้อนหลัง (มาเรียน / มาสาย / ลา / ขาดเรียน) โดยไม่ต้องสแกนหน้า</p>
+      <p class="text-xs text-slate-500 mb-3">แตะปุ่มด้านขวาของแต่ละคนเพื่อบันทึกสถานะย้อนหลัง (มาสาย / ลา / ขาดเรียน) โดยไม่ต้องสแกนหน้า</p>
       <div id="student-list" class="space-y-2 text-sm max-h-64 overflow-auto pr-1">
-       <p class="text-slate-400 text-center py-6 italic">ยังไม่มีข้อมูลนักเรียน</p>
+       <p class="text-slate-500 text-center py-6 italic">ยังไม่มีข้อมูลนักเรียน</p>
       </div>
      </div>
     </div> 
 
     <div id="tab-history" class="tab-content flex-1 overflow-auto p-4 space-y-4 hidden">
-     <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-sm">
+     <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700/50 shadow-sm">
       <div class="flex items-center justify-between mb-3">
-       <h3 class="font-semibold text-sm text-slate-700 flex items-center gap-2">
+       <h3 class="font-semibold text-sm text-slate-200 flex items-center gap-2">
         <i data-lucide="history" class="w-4 h-4 text-sky-400"></i>ประวัติการเช็คชื่อ (ทุกวัน)
        </h3>
-       <button id="btn-refresh-history" class="text-xs text-sky-500 hover:text-sky-400 flex items-center gap-1">
+       <button id="btn-refresh-history" class="text-xs text-sky-400 hover:text-sky-300 flex items-center gap-1">
         <i data-lucide="refresh-cw" class="w-3 h-3"></i>รีเฟรช
        </button>
       </div>
       <div id="history-list" class="space-y-2 text-sm max-h-96 overflow-auto pr-1">
-       <p class="text-slate-400 text-center py-6 italic">ยังไม่มีประวัติ</p>
+       <p class="text-slate-500 text-center py-6 italic">ยังไม่มีประวัติ</p>
       </div>
      </div>
     </div>
@@ -254,71 +357,6 @@
     let cameraStream = null;
     let selectedGroup = '';
     let selectedSubject = '';
-
-    // ===================================================
-    // face-api.js: โหลดโมเดลตรวจจับ/เทียบใบหน้าจริง (ทำงานในเบราว์เซอร์ ไม่ต้องมีเซิร์ฟเวอร์ AI แยก)
-    // ก่อนหน้านี้ปุ่มสแกนหน้าแค่เปิดกล้องรอ 3 วิแล้วเช็คชื่อผ่านเลย ไม่มีการเทียบใบหน้าจริง
-    // ที่แก้รอบนี้: ดึงรูปที่ลงทะเบียนไว้ (Students.ImageDataBase64) มาคำนวณ descriptor แล้วเทียบกับใบหน้าสดจากกล้อง
-    // เปลี่ยนมาใช้ CDN แบบ npm (เร็ว/เสถียรกว่า cdn.jsdelivr.net/gh/... ที่พร็อกซี GitHub ตรงๆ ซึ่งบางเครือข่ายบล็อกหรือช้ามาก)
-    // ===================================================
-    const FACE_MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
-    const FACE_MATCH_THRESHOLD = 0.5; // ยิ่งน้อยยิ่งเข้มงวด ปกติ 0.4-0.6
-    const FACE_MODEL_LOAD_TIMEOUT_MS = 20000; // กันไม่ให้ค้างรอไม่มีที่สิ้นสุดถ้าเน็ต/CDN มีปัญหา
-    let faceModelsLoaded = false;
-    let faceModelsLoading = null;
-    function ensureFaceModelsLoaded() {
-      if (faceModelsLoaded) return Promise.resolve();
-      if (faceModelsLoading) return faceModelsLoading;
-      const loadPromise = Promise.all([
-        faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL),
-        faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODEL_URL),
-        faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODEL_URL)
-      ]).then(() => { faceModelsLoaded = true; });
-
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('โหลดระบบตรวจจับใบหน้าช้าเกินไป (เช็คอินเทอร์เน็ต หรือเครือข่ายอาจบล็อก CDN)')), FACE_MODEL_LOAD_TIMEOUT_MS);
-      });
-
-      faceModelsLoading = Promise.race([loadPromise, timeoutPromise]).catch((err) => {
-        faceModelsLoading = null; // ให้ลองใหม่ได้ในครั้งถัดไปแทนที่จะติดค้างว่า "กำลังโหลด" ตลอดไป
-        throw err;
-      });
-      return faceModelsLoading;
-    }
-    window.addEventListener('load', () => { ensureFaceModelsLoaded().catch(() => {}); });
-
-    // ดึงรูปใบหน้าที่ลงทะเบียนไว้ของนักเรียนคนนี้จาก Students.ImageDataBase64
-    function fetchRegisteredFacePhoto(studentId) {
-      return new Promise((resolve) => {
-        window.__facePhotoResolve = resolve;
-        const script = document.createElement('script');
-        script.src = `${SCRIPT_URL}?action=getFacePhoto&id=${encodeURIComponent(studentId)}&callback=__facePhotoCallback&_=${Date.now()}`;
-        document.body.appendChild(script);
-        document.body.removeChild(script);
-      });
-    }
-    window.__facePhotoCallback = function(response) {
-      if (window.__facePhotoResolve) {
-        window.__facePhotoResolve(response.status === 'success' && response.hasFace ? response.image : null);
-        window.__facePhotoResolve = null;
-      }
-    };
-
-    // คำนวณ face descriptor จากรูป base64 ที่ลงทะเบียนไว้ (ใช้เทียบกับใบหน้าสดจากกล้อง)
-    function computeDescriptorFromBase64(base64) {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = async () => {
-          try {
-            const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
-              .withFaceLandmarks().withFaceDescriptor();
-            resolve(detection ? detection.descriptor : null);
-          } catch (e) { resolve(null); }
-        };
-        img.onerror = () => resolve(null);
-        img.src = 'data:image/jpeg;base64,' + base64;
-      });
-    }
 
     function showPage(id) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -473,92 +511,20 @@
     });
 
     async function startFaceScan() {
-      if (!currentUser) return;
-      const statusEl = document.getElementById('scan-status');
       try {
-        Swal.fire({ title: 'กำลังโหลดระบบตรวจจับใบหน้า', text: 'ครั้งแรกอาจใช้เวลาสักครู่ (ประมาณ 5-10 วินาที) กรุณารอ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-        await ensureFaceModelsLoaded();
-
-        const studentId = currentUser.student_id || currentUser.id;
-
-        if (!currentUser.faceDescriptor) {
-          const photo = await fetchRegisteredFacePhoto(studentId);
-          if (!photo) {
-            Swal.close();
-            Swal.fire('ยังไม่ได้ลงทะเบียนใบหน้า', 'กรุณากดปุ่ม "ลงทะเบียนใบหน้า (ครั้งแรก)" ก่อนเช็คชื่อ', 'warning');
-            return;
-          }
-          const descriptor = await computeDescriptorFromBase64(photo);
-          if (!descriptor) {
-            Swal.close();
-            Swal.fire('รูปที่ลงทะเบียนไว้ใช้ไม่ได้', 'ระบบตรวจไม่พบใบหน้าในรูปที่ลงทะเบียนไว้ กรุณาลงทะเบียนใบหน้าใหม่ (มองกล้องตรงๆ แสงเพียงพอ)', 'error');
-            return;
-          }
-          currentUser.faceDescriptor = descriptor;
-        }
-
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-        Swal.close();
         cameraStream = stream;
-        const video = document.getElementById('camera-feed');
-        video.srcObject = stream;
-        await new Promise((resolve) => { video.onloadedmetadata = resolve; });
-        statusEl.textContent = 'กำลังตรวจจับใบหน้า กรุณามองกล้องตรงๆ...';
-        statusEl.classList.remove('hidden');
-        verifyLiveFace(video, currentUser.faceDescriptor);
+        document.getElementById('camera-feed').srcObject = stream;
+        document.getElementById('scan-status').classList.remove('hidden');
+        setTimeout(() => completeAttendance(), 3000);
       } catch (e) {
-        Swal.close();
-        if (e && e.message && e.message.includes('โหลดระบบตรวจจับใบหน้าช้าเกินไป')) {
-          Swal.fire('โหลดระบบตรวจจับใบหน้าไม่สำเร็จ', 'เช็คสัญญาณอินเทอร์เน็ต หรือเครือข่ายนี้อาจบล็อกการเชื่อมต่อ CDN กรุณาลองใหม่อีกครั้ง (ถ้ายังไม่ได้ ลองเปลี่ยนเครือข่าย เช่น ใช้ 4G/5G แทน WiFi ของโรงเรียน)', 'error');
-        } else {
-          Swal.fire('เปิดกล้องไม่สำเร็จ', 'กรุณาอนุญาตให้เว็บไซต์เข้าถึงกล้องเพื่อเช็คชื่อด้วยใบหน้า', 'error');
-        }
-        statusEl.classList.add('hidden');
+        document.getElementById('scan-status').classList.remove('hidden');
+        document.getElementById('scan-status').textContent = 'จำลองการสแกนใบหน้า...';
+        setTimeout(() => completeAttendance(), 2000);
       }
     }
 
-    // ตรวจจับใบหน้าจากวิดีโอสดต่อเนื่อง แล้วเทียบกับ descriptor ที่ลงทะเบียนไว้ (1-ต่อ-1 verification)
-    let faceScanTimer = null;
-    function verifyLiveFace(video, referenceDescriptor) {
-      const statusEl = document.getElementById('scan-status');
-      let attempts = 0;
-      const maxAttempts = 20; // ~14 วินาที ก่อน timeout
-      clearInterval(faceScanTimer);
-      faceScanTimer = setInterval(async () => {
-        attempts++;
-        try {
-          const detection = await faceapi
-            .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-            .withFaceLandmarks()
-            .withFaceDescriptor();
-
-          if (detection) {
-            clearInterval(faceScanTimer);
-            statusEl.classList.add('hidden');
-            stopCamera();
-            const distance = faceapi.euclideanDistance(detection.descriptor, referenceDescriptor);
-            if (distance < FACE_MATCH_THRESHOLD) {
-              completeAttendance();
-            } else {
-              showScanResult('❌ ใบหน้าไม่ตรงกับข้อมูลที่ลงทะเบียนไว้ของบัญชีนี้ กรุณาลองใหม่ หรือแจ้งอาจารย์ตรวจสอบ', false);
-            }
-            return;
-          }
-        } catch (e) {
-          // ตรวจจับพลาดในเฟรมนี้ ลองเฟรมถัดไป
-        }
-
-        if (attempts >= maxAttempts) {
-          clearInterval(faceScanTimer);
-          statusEl.classList.add('hidden');
-          stopCamera();
-          showScanResult('❌ ตรวจไม่พบใบหน้า กรุณาอยู่ในที่แสงสว่างเพียงพอแล้วลองใหม่อีกครั้ง', false);
-        }
-      }, 700);
-    }
-
     function stopCamera() {
-      clearInterval(faceScanTimer);
       if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
       document.getElementById('camera-feed').srcObject = null;
     }
@@ -791,49 +757,28 @@
       const tbody = document.getElementById('attendance-log-table');
       if (!tbody) return;
 
-      updateSubjectFilterOptions();
-
-      const selectedSubjectFilter = document.getElementById('log-subject-filter').value;
-      const rows = selectedSubjectFilter
-        ? attendanceHistory.filter(h => h.subject === selectedSubjectFilter)
-        : attendanceHistory;
-
-      if (!rows || rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">ยังไม่มีข้อมูลวันนี้</td></tr>';
+      if (!attendanceHistory || attendanceHistory.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-500 italic">ยังไม่มีข้อมูลวันนี้</td></tr>';
         return;
       }
 
-      tbody.innerHTML = rows.slice().reverse().map(h => {
-        let badge = 'bg-green-500/10 text-green-600';
-        if (h.status === 'มาสาย') badge = 'bg-amber-500/10 text-amber-600';
-        else if (h.status === 'ขาดเรียน') badge = 'bg-rose-500/10 text-rose-600';
-        else if (h.status && h.status.includes('ลา')) badge = 'bg-orange-500/10 text-orange-600';
+      tbody.innerHTML = attendanceHistory.slice().reverse().map(h => {
+        let badge = 'bg-green-500/10 text-green-400';
+        if (h.status === 'มาสาย') badge = 'bg-amber-500/10 text-amber-400';
+        else if (h.status === 'ขาดเรียน') badge = 'bg-rose-500/10 text-rose-400';
+        else if (h.status && h.status.includes('ลา')) badge = 'bg-orange-500/10 text-orange-400';
 
         return `
-          <tr class="border-b border-sky-50 hover:bg-sky-50/60 transition-colors">
+          <tr class="border-b border-slate-700/40 hover:bg-slate-700/20 transition-colors">
             <td class="p-2 font-mono">${h.id || h.student_id || ''}</td>
             <td class="p-2">${h.name || ''}</td>
-            <td class="p-2 text-slate-500">${h.class || h.class_name || ''}</td>
-            <td class="p-2 text-sky-500">${h.subject || ''}</td>
-            <td class="p-2 text-slate-500">${h.time || ''}</td>
+            <td class="p-2 text-slate-400">${h.class || h.class_name || ''}</td>
+            <td class="p-2 text-sky-400">${h.subject || ''}</td>
+            <td class="p-2 text-slate-400">${h.time || ''}</td>
             <td class="p-2 text-center"><span class="${badge} text-[11px] px-2 py-0.5 rounded-full font-semibold">${h.status || ''}</span></td>
           </tr>`;
       }).join('');
     }
-
-    // เติมตัวเลือกวิชาในดรอปดาวน์ตัวกรอง ตามวิชาที่มีคนเช็คชื่อจริงวันนี้ (ไม่ซ้ำ) — คงค่าที่เลือกไว้เดิมถ้ายังมีอยู่
-    function updateSubjectFilterOptions() {
-      const select = document.getElementById('log-subject-filter');
-      const currentValue = select.value;
-      const subjects = [...new Set(attendanceHistory.map(h => h.subject).filter(Boolean))].sort();
-
-      select.innerHTML = '<option value="">แยกตามวิชา: ทั้งหมด</option>' +
-        subjects.map(s => `<option value="${s}">${s}</option>`).join('');
-
-      if (subjects.includes(currentValue)) select.value = currentValue;
-    }
-
-    document.getElementById('log-subject-filter').addEventListener('change', renderAttendanceLogTable);
 
     // ปุ่ม "รีเฟรชข้อมูลล่าสุด" ในตาราง — ยิงคำขอใหม่ไปที่ Apps Script
     document.getElementById('btn-refresh-log').addEventListener('click', loadDataFromSheets);
@@ -876,16 +821,15 @@
           : '';
 
         return `
-        <div class="flex items-center justify-between bg-sky-50 rounded-lg px-3 py-2 gap-2 border border-sky-100">
+        <div class="flex items-center justify-between bg-slate-700/30 rounded-lg px-3 py-2 gap-2">
           <div class="min-w-0">
-            <div><span class="text-sky-500 font-medium">${s.student_id}</span> <span class="text-slate-800">${s.name}</span></div>
+            <div><span class="text-sky-400 font-medium">${s.student_id}</span> <span class="text-white">${s.name}</span></div>
             <div class="flex items-center gap-2 mt-0.5">
-              <span class="text-xs text-slate-500 bg-white border border-sky-100 px-2 py-1 rounded">${s.class_name}</span>
+              <span class="text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">${s.class_name}</span>
               ${statusBadge}
             </div>
           </div>
           <div class="flex items-center gap-1 shrink-0">
-            <button class="px-2 py-1 text-[11px] rounded-lg bg-green-500/10 text-green-500 hover:bg-green-500/20 font-medium transition-colors" onclick="markManualAttendance('${s.student_id}', '${s.name.replace(/'/g, "\\'")}', '${s.class_name}', 'มาเรียน')">มาเรียน</button>
             <button class="px-2 py-1 text-[11px] rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 font-medium transition-colors" onclick="markManualAttendance('${s.student_id}', '${s.name.replace(/'/g, "\\'")}', '${s.class_name}', 'มาสาย')">มาสาย</button>
             <button class="px-2 py-1 text-[11px] rounded-lg bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 font-medium transition-colors" onclick="markManualAttendance('${s.student_id}', '${s.name.replace(/'/g, "\\'")}', '${s.class_name}', 'ลา')">ลา</button>
             <button class="px-2 py-1 text-[11px] rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 font-medium transition-colors" onclick="markManualAttendance('${s.student_id}', '${s.name.replace(/'/g, "\\'")}', '${s.class_name}', 'ขาดเรียน')">ขาด</button>
@@ -950,70 +894,40 @@
     function renderFullHistoryList() {
       const container = document.getElementById('history-list');
       if (!fullHistoryRecords || fullHistoryRecords.length === 0) { 
-        container.innerHTML = '<p class="text-slate-400 text-center py-6 italic">ยังไม่มีประวัติการแจ้งลาหรือเช็คชื่อ</p>'; 
+        container.innerHTML = '<p class="text-slate-500 text-center py-6 italic">ยังไม่มีประวัติการแจ้งลาหรือเช็คชื่อ</p>'; 
         return; 
       }
-
-      // จัดกลุ่มข้อมูลเป็น วันที่ -> วิชา -> รายชื่อ (ข้อมูลดิบเรียงเก่า->ใหม่ตามลำดับที่บันทึกอยู่แล้ว)
-      const byDate = {};
-      const dateOrder = [];
-      fullHistoryRecords.forEach(h => {
-        const dateKey = h.date || 'ไม่ระบุวันที่';
-        if (!byDate[dateKey]) { byDate[dateKey] = { order: [], bySubject: {} }; dateOrder.push(dateKey); }
-        const subjectKey = h.subject || 'ไม่ระบุวิชา';
-        if (!byDate[dateKey].bySubject[subjectKey]) { byDate[dateKey].bySubject[subjectKey] = []; byDate[dateKey].order.push(subjectKey); }
-        byDate[dateKey].bySubject[subjectKey].push(h);
-      });
-
-      dateOrder.reverse(); // วันล่าสุดขึ้นก่อน
-
-      container.innerHTML = dateOrder.map(dateKey => {
-        const dateGroup = byDate[dateKey];
-        const subjectsHTML = dateGroup.order.map(subjectKey => {
-          const records = dateGroup.bySubject[subjectKey];
-          const rowsHTML = records.slice().reverse().map(h => {
-            let borderColor = 'border-green-500'; 
-            let statusColor = 'text-green-600';
-            if (h.status === 'มาสาย') { borderColor = 'border-amber-500'; statusColor = 'text-amber-600'; }
-            else if (h.status === 'ขาดเรียน') { borderColor = 'border-rose-500'; statusColor = 'text-rose-600'; }
-            else if (h.status && h.status.includes('ลา')) { borderColor = 'border-orange-500'; statusColor = 'text-orange-600'; }
-
-            const reasonHTML = h.reason ? `<div class="text-[11px] text-slate-500 mt-1 italic bg-white px-2 py-0.5 rounded inline-block">เหตุผล: ${h.reason}</div>` : '';
-
-            return `
-              <div class="flex items-center justify-between bg-white rounded-lg px-3 py-2 border-l-4 ${borderColor}">
-                <div>
-                  <div class="text-slate-800 font-medium">${h.name} <span class="text-xs text-slate-500">(${h.id || h.student_id})</span></div>
-                  <div class="text-xs text-slate-500">${h.class || h.class_name || ''}</div>
-                  ${reasonHTML}
-                </div>
-                <div class="text-right">
-                  <div class="font-semibold ${statusColor}">${h.status}</div>
-                  <div class="text-xs text-slate-400">${h.time}</div>
-                </div>
-              </div>`;
-          }).join('');
-
-          return `
-            <div class="mb-2">
-              <div class="text-xs font-semibold text-sky-500 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
-                <i data-lucide="book-open" class="w-3 h-3"></i>${subjectKey}
-                <span class="text-slate-400 font-normal normal-case">(${records.length} คน)</span>
-              </div>
-              <div class="space-y-1.5">${rowsHTML}</div>
-            </div>`;
-        }).join('');
+      
+      container.innerHTML = fullHistoryRecords.slice().reverse().map(h => {
+        let borderColor = 'border-green-500'; 
+        let statusColor = 'text-green-400';
+        
+        if (h.status === 'มาสาย') { 
+          borderColor = 'border-amber-500'; 
+          statusColor = 'text-amber-400'; 
+        } else if (h.status === 'ขาดเรียน') {
+          borderColor = 'border-rose-500';
+          statusColor = 'text-rose-400';
+        } else if (h.status && h.status.includes('ลา')) { 
+          borderColor = 'border-orange-500'; 
+          statusColor = 'text-orange-400'; 
+        }
+        
+        const reasonHTML = h.reason ? `<div class="text-[11px] text-slate-400 mt-1 italic bg-slate-800 px-2 py-0.5 rounded inline-block">เหตุผล: ${h.reason}</div>` : '';
 
         return `
-          <div class="bg-sky-50 rounded-xl p-3 border border-sky-100">
-            <div class="text-sm font-bold text-slate-700 mb-2 flex items-center gap-1.5">
-              <i data-lucide="calendar" class="w-3.5 h-3.5 text-sky-400"></i>${dateKey}
+          <div class="flex items-center justify-between bg-slate-700/30 rounded-lg px-3 py-2 border-l-4 ${borderColor}">
+            <div>
+              <div class="text-white font-medium">${h.name} <span class="text-xs text-slate-400">(${h.id || h.student_id})</span></div>
+              <div class="text-xs text-slate-400">${h.class || h.class_name} • ${h.date || ''}</div>
+              ${reasonHTML}
             </div>
-            ${subjectsHTML}
+            <div class="text-right">
+              <div class="font-semibold ${statusColor}">${h.status}</div>
+              <div class="text-xs text-slate-500">${h.time}</div>
+            </div>
           </div>`;
-      }).join('<div class="h-1"></div>');
-
-      lucide.createIcons();
+      }).join('');
     }
 
     lucide.createIcons();
