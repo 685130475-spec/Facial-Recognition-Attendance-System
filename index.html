@@ -27,7 +27,18 @@
     <input type="hidden" name="id" id="face-upload-id">
     <input type="hidden" name="image" id="face-upload-image">
   </form>
-
+<!-- ส่วนหัวข้อระบบ (ย้ายมาไว้บนสุด) -->
+<div class="text-center mb-6">
+  <div class="mx-auto w-16 h-16 bg-sky-100 rounded-full flex items-center justify-center mb-3 shadow-inner">
+    <i class="fas fa-scan-face text-2xl text-sky-500"></i>
+  </div>
+  <h2 class="text-xl font-bold text-slate-800">ระบบเช็คชื่อด้วยเทคโนโลยีใบหน้า</h2>
+  <p class="text-xs text-slate-500 mt-1">กรุณาเลือกรายชื่ออาจารย์เพื่อทำการสแกนใบหน้า</p>
+</div>
+<!-- กล่องรวมรายชื่ออาจารย์แยกแผนกเดิมจะอยู่ต่อจากตรงนี้ -->
+<div class="w-full max-w-xl mx-auto space-y-4 text-left bg-white p-6 rounded-2xl shadow-xl max-h-[60vh] overflow-y-auto">
+  <!-- แผนกวิชาต่างๆ... -->
+</div>
   <div id="app" class="h-full w-full flex flex-col">
    
     <!-- เริ่มต้นกล่องรายชื่ออาจารย์แยกแผนก (วางแทนที่ปุ่มเข้าสู่ระบบเดิม) -->
@@ -68,15 +79,8 @@
       </button>
     </div>
   </div>
- <!-- ส่วนหัวข้อระบบ -->
-  <div class="text-center mb-6">
-    <div class="mx-auto w-16 h-16 bg-sky-100 rounded-full flex items-center justify-center mb-3 shadow-inner">
-      <i class="fas fa-scan-face text-2xl text-sky-500"></i>
-    </div>
-    <h2 class="text-xl font-bold text-slate-800">ระบบเช็คชื่อด้วยเทคโนโลยีใบหน้า</h2>
-    <p class="text-xs text-slate-500 mt-1">กรุณาเลือกรายชื่ออาจารย์เพื่อทำการสแกนใบหน้า</p>
-  </div>
 
+  
   <!-- กล่องรวมรายชื่ออาจารย์แยกแผนก (ไม่มีกล่องกรอกรหัสผ่านหลงเหลือแน่นอน) -->
   <div class="w-full max-w-xl mx-auto space-y-4 text-left bg-white p-6 rounded-2xl shadow-xl max-h-[60vh] overflow-y-auto">
     
@@ -93,11 +97,9 @@
         <button type="button" onclick="document.getElementById('face-upload-id').value='DB07'; alert('เลือก อ.สุพัตรา แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.สุพัตรา จันทร์น้ำอ่าง</button>
         <button type="button" onclick="document.getElementById('face-upload-id').value='DB08'; alert('เลือก อ.ศศิวิมล แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ศศิวิมล ถันชนนาง</button>
         <button type="button" onclick="document.getElementById('face-upload-id').value='DB09'; alert('เลือก อ.ภานุพงศ์ แล้ว กรุณาสแกนหน้า')" class="py-2 px-3 bg-gradient-to-r from-sky-400 to-blue-500 rounded-xl font-medium text-white hover:from-sky-500 hover:to-blue-600 transition-all shadow-md shadow-sky-500/10 active:scale-95 text-xs truncate">อ.ภานุพงศ์ ปันสอน</button>
-      </div>
-    </div>
-
-    <!-- คุณสามารถนำโค้ดของ แผนกบัญชี, ช่างยนต์, ช่างไฟฟ้า, สามัญ ที่ทำไว้ก่อนหน้านี้มาวางต่อตรงนี้ได้เลยครับ -->
-
+      
+      </div> <!-- แท็กปิดของ grid ต้องอยู่ตรงนี้หลังปุ่มสุดท้ายของแผนก -->
+    </div> <!-- แท็กปิดของบล็อกแผนกดิจิทัล -->
   </div>
 <!-- แผนกวิชาบัญชี ตลาดและธุรกิจค้าปลีก  -->
   <div>
