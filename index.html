@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบเช็คชื่อนักเรียนอัจฉริยะ | วิทยาลัยเทคโนโลยีอุตรดิตถ์</title>
+    <title>ระบบเช็คชื่อด้วยเทคโนโลยีใบหน้า | วิทยาลัยเทคโนโลยีอุตรดิตถ์</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -15,6 +15,9 @@
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- SheetJS: for reading CSV/Excel files client-side -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <!-- Thai font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,6 +53,16 @@
             box-shadow: 0 8px 16px -6px rgba(37,99,235,0.35);
         }
         .dept-divider { border-color: #dbeafe; }
+        .teacher-btn-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        @media (min-width: 480px) {
+            .teacher-btn-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+        }
+        @media (min-width: 1024px) {
+            .teacher-btn-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+        }
+        .teacher-btn { text-align: center; word-break: break-word; }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
@@ -61,15 +74,15 @@
                 <i data-lucide="graduation-cap" class="w-9 h-9 text-white"></i>
             </div>
             <h1 class="text-xl md:text-2xl font-semibold text-slate-800 dark:text-gray-100">วิทยาลัยเทคโนโลยีอุตรดิตถ์</h1>
-            <p class="text-slate-500 dark:text-gray-400 text-sm mt-1">ระบบเช็คชื่อนักเรียนด้วยใบหน้า &middot; กรุณาเลือกชื่ออาจารย์เพื่อเริ่มต้น</p>
+            <p class="text-slate-500 dark:text-gray-400 text-sm mt-1">ระบบเช็คชื่อเช็คชื่อด้วยเทคโนโลยีใบหน้า &middot; กรุณาเลือกชื่ออาจารย์เพื่อเริ่มต้น</p>
         </div>
 
-        <div class="w-full max-w-3xl bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-blue-100 dark:border-gray-700 p-5 sm:p-8">
+        <div class="w-full max-w-3xl lg:max-w-5xl bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-blue-100 dark:border-gray-700 p-5 sm:p-6 lg:p-10">
             <div class="relative mb-6">
                 <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-                <input type="text" id="teacher-search" placeholder="ค้นหาชื่ออาจารย์..." class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-gray-600 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                <input type="text" id="teacher-search" placeholder="ค้นหาชื่ออาจารย์..." class="w-full pl-9 pr-4 py-2.5 lg:py-3 rounded-xl border border-slate-200 dark:border-gray-600 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base">
             </div>
-            <div id="teacher-groups" class="space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1"></div>
+            <div id="teacher-groups" class="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1"></div>
             <div id="teacher-loading" class="text-center py-10">
                 <div class="loader w-10 h-10 rounded-full border-4 border-blue-100 mx-auto"></div>
                 <p class="mt-3 text-slate-500 dark:text-gray-400 text-sm">กำลังโหลดรายชื่ออาจารย์...</p>
@@ -79,36 +92,39 @@
     </div>
 
     <!-- ============ SCREEN 2: เลือกห้องเรียน/วิชาที่สอน ============ -->
-    <div id="screen-subject-select" class="hidden min-h-screen flex flex-col items-center px-4 py-10">
-        <div class="w-full max-w-3xl">
-            <button onclick="backToTeacherSelect()" class="flex items-center gap-1.5 text-slate-500 dark:text-gray-400 hover:text-blue-600 text-sm mb-5">
-                <i data-lucide="arrow-left" class="w-4 h-4"></i> เปลี่ยนอาจารย์
-            </button>
-
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-blue-100 dark:border-gray-700 p-5 sm:p-8">
-                <div class="flex items-center gap-3 mb-1">
+    <div id="class-select-modal" class="hidden fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-5 sm:p-6 lg:p-8 max-w-2xl w-full max-h-[85vh] overflow-y-auto custom-scrollbar">
+            <div class="flex items-start justify-between mb-1">
+                <div class="flex items-center gap-3">
                     <div class="brand-logo-mark w-11 h-11 rounded-xl flex items-center justify-center shrink-0">
                         <i data-lucide="user-round" class="w-6 h-6 text-white"></i>
                     </div>
                     <div>
                         <p class="text-xs text-slate-400">อาจารย์ผู้สอน</p>
-                        <h2 id="subject-screen-teacher-name" class="text-lg font-semibold text-slate-800 dark:text-gray-100"></h2>
+                        <h2 id="subject-screen-teacher-name" class="text-lg lg:text-xl font-semibold text-slate-800 dark:text-gray-100"></h2>
                     </div>
                 </div>
-                <p class="text-slate-500 dark:text-gray-400 text-sm mt-4 mb-4">เลือกห้องเรียนและวิชาที่สอนในคาบนี้</p>
-
-                <div id="subject-pairs" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5"></div>
-                <p id="subject-empty" class="hidden text-center text-slate-400 py-6 text-sm">ยังไม่มีข้อมูลห้องเรียน/วิชาสำหรับอาจารย์ท่านนี้ กดปุ่มด้านล่างเพื่อเพิ่ม</p>
-
-                <button onclick="openAddSubjectModal()" id="add-subject-btn" class="w-full flex items-center justify-center gap-2 border-2 border-dashed border-blue-200 dark:border-gray-600 text-blue-600 dark:text-blue-400 rounded-xl py-3 hover:bg-blue-50 dark:hover:bg-gray-700/50 text-sm font-medium">
-                    <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มห้องเรียน / วิชาที่สอน
-                </button>
-                <p id="subject-limit-note" class="hidden text-center text-xs text-amber-600 mt-2">เพิ่มได้สูงสุด 6 รายการต่ออาจารย์หนึ่งคน</p>
+                <button type="button" onclick="closeClassSelectModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-gray-200 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
+            <p class="text-slate-500 dark:text-gray-400 text-sm mt-4 mb-4">เลือกห้องเรียนและวิชาที่สอนในคาบนี้</p>
+
+            <div id="subject-pairs" class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-5"></div>
+            <p id="subject-empty" class="hidden text-center text-slate-400 py-6 text-sm">ยังไม่มีข้อมูลห้องเรียน/วิชาสำหรับอาจารย์ท่านนี้ กดปุ่มด้านล่างเพื่อเพิ่ม</p>
+
+            <button type="button" onclick="openAddSubjectModal()" id="add-subject-btn" class="w-full flex items-center justify-center gap-2 border-2 border-dashed border-blue-200 dark:border-gray-600 text-blue-600 dark:text-blue-400 rounded-xl py-3 lg:py-3.5 hover:bg-blue-50 dark:hover:bg-gray-700/50 text-sm lg:text-base font-medium">
+                <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มห้องเรียน / วิชาที่สอน
+            </button>
+            <button type="button" onclick="document.getElementById('subject-import-input').click()" id="import-subject-btn" class="w-full flex items-center justify-center gap-2 border border-slate-200 dark:border-gray-600 text-slate-500 dark:text-gray-400 rounded-xl py-2.5 mt-2 hover:bg-slate-50 dark:hover:bg-gray-700/50 text-xs lg:text-sm font-medium">
+                <i data-lucide="upload" class="w-3.5 h-3.5"></i> นำเข้าจากไฟล์ (CSV/Excel)
+            </button>
+            <input type="file" id="subject-import-input" accept=".csv,.xlsx,.xls" class="hidden">
+            <p class="text-xs text-slate-400 mt-2 text-center">ไฟล์ต้องมีคอลัมน์ ห้องเรียน (Class) และ วิชา (Subject) — แถวแรกเป็นหัวตาราง จะนำเข้าให้เฉพาะอาจารย์ที่เลือกอยู่</p>
+            <p id="subject-import-status" class="hidden text-xs mt-2 text-center"></p>
+            <p id="subject-limit-note" class="hidden text-center text-xs text-amber-600 mt-2">เพิ่มได้สูงสุด 6 รายการต่ออาจารย์หนึ่งคน</p>
         </div>
     </div>
 
-    <!-- ============ MAIN APP (หลังเลือกห้อง/วิชาแล้ว) ============ -->
+    <!-- ============ MAIN APP (หลังเลือกอาจารย์แล้ว) ============ -->
     <div id="app-main" class="hidden">
     <div class="container mx-auto p-4 md:p-6">
 
@@ -140,7 +156,10 @@
                 <span class="flex items-center gap-1.5"><i data-lucide="door-open" class="w-3.5 h-3.5 text-blue-500"></i><span id="ctx-class" class="font-medium"></span></span>
                 <span class="flex items-center gap-1.5"><i data-lucide="book-open" class="w-3.5 h-3.5 text-blue-500"></i><span id="ctx-subject" class="font-medium"></span></span>
             </div>
-            <button onclick="backToSubjectSelect()" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">เปลี่ยนห้อง/วิชา</button>
+            <div class="flex items-center gap-4">
+                <button type="button" onclick="openClassSelectModal()" id="ctx-change-class-btn" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">เลือกห้อง/วิชา</button>
+                <button type="button" onclick="backToTeacherSelect()" class="text-slate-400 hover:text-slate-600 dark:hover:text-gray-200 font-medium">เปลี่ยนอาจารย์</button>
+            </div>
         </div>
 
         <!-- Dynamic Content Area -->
@@ -220,7 +239,7 @@
 
             <!-- Manage Students Tab -->
             <div id="content-manage" class="hidden">
-                 <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-sm border border-blue-100 dark:border-gray-700"><div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4"><h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300">จัดการข้อมูลนักเรียน (ทั้งหมด)</h2><button onclick="openStudentModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2 w-full sm:w-auto justify-center"><i data-lucide="user-plus"></i><span>เพิ่มนักเรียน</span></button></div><div class="overflow-x-auto"><table class="w-full text-left min-w-[600px]"><thead class="bg-slate-50 dark:bg-gray-700/50"><tr><th class="p-3">รหัสนักเรียน</th><th class="p-3">ชื่อ-สกุล</th><th class="p-3">ชั้นเรียน</th><th class="p-3 text-center">จัดการ</th></tr></thead><tbody id="student-table-body" class="divide-y divide-gray-200 dark:divide-gray-700"></tbody></table></div></div>
+                 <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-sm border border-blue-100 dark:border-gray-700"><div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-3"><h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300">จัดการข้อมูลนักเรียน (ทั้งหมด)</h2><div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-center"><button type="button" onclick="document.getElementById('student-import-input').click()" class="bg-white dark:bg-gray-700 border border-blue-200 dark:border-gray-600 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-lg hover:bg-blue-50 flex items-center space-x-2 justify-center"><i data-lucide="upload"></i><span>นำเข้าจากไฟล์ (CSV/Excel)</span></button><input type="file" id="student-import-input" accept=".csv,.xlsx,.xls" class="hidden"><button type="button" onclick="openStudentModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2 justify-center"><i data-lucide="user-plus"></i><span>เพิ่มนักเรียน</span></button></div></div><p id="student-import-status" class="hidden text-sm mb-3"></p><p class="text-xs text-slate-400 mb-4">ไฟล์ที่นำเข้าต้องมีคอลัมน์: รหัสนักเรียน (StudentID), ชื่อ-สกุล (Name), ชั้นเรียน (Class) — แถวแรกเป็นหัวตาราง รูปใบหน้าต้องมาเพิ่มทีหลังผ่านปุ่ม "แก้ไข" รายคน</p><div class="overflow-x-auto"><table class="w-full text-left min-w-[600px]"><thead class="bg-slate-50 dark:bg-gray-700/50"><tr><th class="p-3">รหัสนักเรียน</th><th class="p-3">ชื่อ-สกุล</th><th class="p-3">ชั้นเรียน</th><th class="p-3 text-center">จัดการ</th></tr></thead><tbody id="student-table-body" class="divide-y divide-gray-200 dark:divide-gray-700"></tbody></table></div></div>
             </div>
         </main>
     </div>
@@ -295,6 +314,10 @@
             getLocation();
             document.getElementById('image-upload-input').addEventListener('change', handleImageUpload);
             document.getElementById('teacher-search').addEventListener('input', filterTeacherList);
+            document.getElementById('dashboard-date').valueAsDate = new Date();
+            document.getElementById('dashboard-date').addEventListener('change', () => { if (selectedClass) loadAttendanceDataForDashboard(); });
+            document.getElementById('student-import-input').addEventListener('change', handleStudentImportFile);
+            document.getElementById('subject-import-input').addEventListener('change', handleSubjectImportFile);
             await loadTeacherList();
         };
 
@@ -355,12 +378,13 @@
             Object.keys(groups).forEach(dept => {
                 const section = document.createElement('div');
                 section.className = 'teacher-group';
-                section.innerHTML = `<h3 class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-2 pb-1 border-b dept-divider">${dept}</h3>
-                    <div class="flex flex-wrap gap-2"></div>`;
-                const btnWrap = section.querySelector('div.flex');
+                section.innerHTML = `<h3 class="text-xs lg:text-sm font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-2 pb-1 border-b dept-divider">${dept}</h3>
+                    <div class="teacher-btn-grid grid gap-2"></div>`;
+                const btnWrap = section.querySelector('div.teacher-btn-grid');
                 groups[dept].forEach(t => {
                     const btn = document.createElement('button');
-                    btn.className = 'teacher-btn bg-blue-50 hover:bg-blue-600 hover:text-white text-slate-700 dark:bg-gray-700 dark:text-gray-200 text-sm font-medium px-4 py-2 rounded-full border border-blue-100 dark:border-gray-600';
+                    btn.type = 'button';
+                    btn.className = 'teacher-btn bg-blue-50 hover:bg-blue-600 hover:text-white active:scale-95 text-slate-700 dark:bg-gray-700 dark:text-gray-200 text-sm lg:text-base font-medium px-3 py-2.5 lg:px-4 lg:py-3 rounded-xl border border-blue-100 dark:border-gray-600';
                     btn.textContent = t.name;
                     btn.dataset.name = t.name.toLowerCase();
                     btn.onclick = () => selectTeacher(t.name);
@@ -389,22 +413,41 @@
 
         function selectTeacher(name) {
             selectedTeacher = name;
+            selectedClass = null;
+            selectedSubject = null;
             document.getElementById('screen-teacher-select').classList.add('hidden');
-            document.getElementById('screen-subject-select').classList.remove('hidden');
-            document.getElementById('subject-screen-teacher-name').textContent = name;
-            loadTeacherSubjects();
+            document.getElementById('app-main').classList.remove('hidden');
+            document.getElementById('ctx-teacher').textContent = selectedTeacher;
+            document.getElementById('ctx-class').textContent = 'ยังไม่ได้เลือกห้อง';
+            document.getElementById('ctx-subject').textContent = 'ยังไม่ได้เลือกวิชา';
+            lucide.createIcons();
+            window.scrollTo(0, 0);
+            renderEmptyClassPrompt();
+            loadFaceModelsIfNeeded();
+            switchTab('dashboard');
+            openClassSelectModal(); // prompt for class/subject right away, inside the dashboard
         }
 
         function backToTeacherSelect() {
             selectedTeacher = null; selectedClass = null; selectedSubject = null;
-            document.getElementById('screen-subject-select').classList.add('hidden');
+            document.getElementById('class-select-modal').classList.add('hidden');
             document.getElementById('app-main').classList.add('hidden');
             document.getElementById('screen-teacher-select').classList.remove('hidden');
+            window.scrollTo(0, 0);
         }
 
         // ======================================================
-        // SCREEN 2: เลือกห้องเรียน / วิชาที่สอน
+        // MODAL: เลือกห้องเรียน / วิชาที่สอน (เปิดจากในแดชบอร์ด)
         // ======================================================
+        function openClassSelectModal() {
+            document.getElementById('subject-screen-teacher-name').textContent = selectedTeacher;
+            document.getElementById('class-select-modal').classList.remove('hidden');
+            loadTeacherSubjects();
+        }
+        function closeClassSelectModal() {
+            document.getElementById('class-select-modal').classList.add('hidden');
+        }
+
         async function loadTeacherSubjects() {
             const wrap = document.getElementById('subject-pairs');
             wrap.innerHTML = `<div class="col-span-full text-center py-6"><div class="loader w-8 h-8 rounded-full border-4 border-blue-100 mx-auto"></div></div>`;
@@ -427,7 +470,8 @@
                 emptyMsg.classList.add('hidden');
                 teacherSubjectRows.forEach(row => {
                     const btn = document.createElement('button');
-                    btn.className = 'pair-btn text-left bg-blue-50 hover:bg-blue-600 hover:text-white dark:bg-gray-700 dark:text-gray-200 rounded-xl border border-blue-100 dark:border-gray-600 p-4';
+                    btn.type = 'button';
+                    btn.className = 'pair-btn text-left active:scale-95 bg-blue-50 hover:bg-blue-600 hover:text-white dark:bg-gray-700 dark:text-gray-200 rounded-xl border border-blue-100 dark:border-gray-600 p-4 text-sm lg:text-base';
                     btn.innerHTML = `<span class="block text-xs opacity-70 mb-1">ห้อง ${row.class}</span><span class="block font-medium">${row.subject}</span>`;
                     btn.onclick = () => selectSubjectClass(row.class, row.subject);
                     wrap.appendChild(btn);
@@ -469,8 +513,7 @@
         async function selectSubjectClass(cls, subject) {
             selectedClass = cls;
             selectedSubject = subject;
-            document.getElementById('screen-subject-select').classList.add('hidden');
-            document.getElementById('app-main').classList.remove('hidden');
+            closeClassSelectModal();
             document.getElementById('ctx-teacher').textContent = selectedTeacher;
             document.getElementById('ctx-class').textContent = 'ห้อง ' + selectedClass;
             document.getElementById('ctx-subject').textContent = selectedSubject;
@@ -478,16 +521,24 @@
 
             const modelsOk = await loadFaceModelsIfNeeded();
             if (!modelsOk) return;
-            document.getElementById('dashboard-date').valueAsDate = new Date();
-            document.getElementById('dashboard-date').addEventListener('change', () => { loadAttendanceDataForDashboard(); }, { once: false });
-            switchTab('dashboard');
+            switchTab(getActiveTabName());
         }
 
-        function backToSubjectSelect() {
-            selectedClass = null; selectedSubject = null;
-            document.getElementById('app-main').classList.add('hidden');
-            document.getElementById('screen-subject-select').classList.remove('hidden');
-            loadTeacherSubjects();
+        function getActiveTabName() {
+            if (!document.getElementById('content-attendance').classList.contains('hidden')) return 'attendance';
+            if (!document.getElementById('content-manage').classList.contains('hidden')) return 'manage';
+            return 'dashboard';
+        }
+
+        // Shown in the dashboard/attendance areas before a classroom + subject has been chosen.
+        function renderEmptyClassPrompt() {
+            const promptHtml = `<div class="text-center py-12">
+                <i data-lucide="door-open" class="w-8 h-8 text-blue-300 mx-auto mb-3"></i>
+                <p class="text-slate-500 dark:text-gray-400 text-sm mb-4">กรุณาเลือกห้องเรียนและวิชาที่สอนก่อน จึงจะแสดงข้อมูลนักเรียนได้</p>
+                <button type="button" onclick="openClassSelectModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">เลือกห้อง/วิชา</button>
+            </div>`;
+            document.getElementById('student-roster-grid').innerHTML = promptHtml;
+            document.getElementById('roster-loading').style.display = 'none';
         }
 
         // --- UI & NAVIGATION ---
@@ -504,14 +555,26 @@
             const activeTab = document.getElementById(`tab-${tabName}`);
             activeTab.classList.add('bg-blue-600', 'text-white');
             activeTab.classList.remove('text-gray-600', 'dark:text-gray-300');
+            window.scrollTo(0, 0);
 
             if (tabName === 'dashboard') {
-                loadStudentRosterForDashboard();
-                loadAttendanceDataForDashboard();
+                if (selectedClass) { loadStudentRosterForDashboard(); loadAttendanceDataForDashboard(); }
+                else { renderEmptyClassPrompt(); document.getElementById('stat-present').innerText = '0'; document.getElementById('stat-late').innerText = '0'; document.getElementById('stat-absent').innerText = '0'; }
             } else if (tabName === 'manage') {
                 loadStudentDataForTable();
             } else if (tabName === 'attendance') {
-                loadStudentDataForRecognition();
+                if (selectedClass) { loadStudentDataForRecognition(); document.getElementById('start-scan-section').classList.remove('hidden'); document.getElementById('attendance-class-prompt') && document.getElementById('attendance-class-prompt').remove(); }
+                else {
+                    document.getElementById('start-scan-section').classList.add('hidden');
+                    if (!document.getElementById('attendance-class-prompt')) {
+                        const prompt = document.createElement('div');
+                        prompt.id = 'attendance-class-prompt';
+                        prompt.className = 'text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-blue-100 dark:border-gray-700';
+                        prompt.innerHTML = `<i data-lucide="door-open" class="w-8 h-8 text-blue-300 mx-auto mb-3"></i><p class="text-slate-500 dark:text-gray-400 text-sm mb-4">กรุณาเลือกห้องเรียนและวิชาที่สอนก่อนเริ่มเช็คชื่อ</p><button type="button" onclick="openClassSelectModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">เลือกห้อง/วิชา</button>`;
+                        document.getElementById('content-attendance').prepend(prompt);
+                        lucide.createIcons();
+                    }
+                }
             }
         }
 
@@ -720,6 +783,115 @@
             setTimeout(() => {
                 successOverlay.classList.add('hidden');
             }, 2000);
+        }
+
+        // --- BULK IMPORT FROM CSV / EXCEL ---
+        function readSpreadsheetFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                        resolve(rows);
+                    } catch (err) { reject(err); }
+                };
+                reader.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        function findColumnIndex(headerRow, aliases) {
+            const normalized = headerRow.map(h => String(h).trim().toLowerCase());
+            for (const alias of aliases) {
+                const idx = normalized.indexOf(alias.toLowerCase());
+                if (idx !== -1) return idx;
+            }
+            return -1;
+        }
+
+        async function handleStudentImportFile(event) {
+            const file = event.target.files[0];
+            event.target.value = '';
+            if (!file) return;
+            const statusEl = document.getElementById('student-import-status');
+            statusEl.classList.remove('hidden');
+            statusEl.className = 'text-sm mb-3 text-slate-500';
+            statusEl.textContent = 'กำลังอ่านไฟล์...';
+            try {
+                const rows = await readSpreadsheetFile(file);
+                if (rows.length < 2) throw new Error('ไม่พบข้อมูลในไฟล์');
+                const header = rows[0];
+                const idIdx = findColumnIndex(header, ['StudentID', 'รหัสนักเรียน', 'id']);
+                const nameIdx = findColumnIndex(header, ['Name', 'ชื่อ-สกุล', 'ชื่อ', 'name']);
+                const classIdx = findColumnIndex(header, ['Class', 'ชั้นเรียน', 'ห้องเรียน', 'class']);
+                if (idIdx === -1 || nameIdx === -1 || classIdx === -1) {
+                    throw new Error('ไม่พบคอลัมน์ที่ต้องการ (รหัสนักเรียน/StudentID, ชื่อ-สกุล/Name, ชั้นเรียน/Class) กรุณาตรวจสอบหัวตาราง');
+                }
+                const records = rows.slice(1)
+                    .filter(r => r[idIdx] !== '' && r[idIdx] !== undefined && r[idIdx] !== null)
+                    .map(r => ({ id: String(r[idIdx]).trim(), name: String(r[nameIdx] || '').trim(), class: String(r[classIdx] || '').trim() }));
+                if (records.length === 0) throw new Error('ไม่พบแถวข้อมูลนักเรียนในไฟล์');
+                if (!confirm(`พบข้อมูลนักเรียน ${records.length} คนในไฟล์ ต้องการนำเข้าเข้า Google Sheet เลยหรือไม่?\n(รูปใบหน้าต้องมาเพิ่มทีหลังทีละคน)`)) {
+                    statusEl.classList.add('hidden');
+                    return;
+                }
+                statusEl.textContent = `กำลังนำเข้า ${records.length} รายการ...`;
+                const response = await apiCall({ action: 'addStudentsBulk', data: records });
+                if (response.success) {
+                    statusEl.className = 'text-sm mb-3 text-green-600';
+                    statusEl.textContent = response.message || `นำเข้าสำเร็จ ${records.length} รายการ`;
+                    loadStudentDataForTable();
+                } else {
+                    statusEl.className = 'text-sm mb-3 text-red-500';
+                    statusEl.textContent = 'เกิดข้อผิดพลาด: ' + response.error;
+                }
+            } catch (err) {
+                statusEl.className = 'text-sm mb-3 text-red-500';
+                statusEl.textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+            }
+        }
+
+        async function handleSubjectImportFile(event) {
+            const file = event.target.files[0];
+            event.target.value = '';
+            if (!file) return;
+            const statusEl = document.getElementById('subject-import-status');
+            statusEl.classList.remove('hidden');
+            statusEl.className = 'text-xs mt-2 text-center text-slate-500';
+            statusEl.textContent = 'กำลังอ่านไฟล์...';
+            try {
+                const rows = await readSpreadsheetFile(file);
+                if (rows.length < 2) throw new Error('ไม่พบข้อมูลในไฟล์');
+                const header = rows[0];
+                const classIdx = findColumnIndex(header, ['Class', 'ห้องเรียน', 'ชั้นเรียน', 'class']);
+                const subjectIdx = findColumnIndex(header, ['Subject', 'วิชา', 'วิชาที่สอน', 'subject']);
+                if (classIdx === -1 || subjectIdx === -1) {
+                    throw new Error('ไม่พบคอลัมน์ที่ต้องการ (ห้องเรียน/Class, วิชา/Subject) กรุณาตรวจสอบหัวตาราง');
+                }
+                const records = rows.slice(1)
+                    .filter(r => r[classIdx] !== '' && r[subjectIdx] !== '')
+                    .map(r => ({ class: String(r[classIdx]).trim(), subject: String(r[subjectIdx]).trim() }));
+                if (records.length === 0) throw new Error('ไม่พบแถวข้อมูลในไฟล์');
+                if (!confirm(`พบข้อมูลห้อง/วิชา ${records.length} รายการ สำหรับอาจารย์ ${selectedTeacher} ต้องการนำเข้าหรือไม่?\n(สูงสุด ${'6'} รายการต่ออาจารย์หนึ่งคน ส่วนเกินจะถูกข้าม)`)) {
+                    statusEl.classList.add('hidden');
+                    return;
+                }
+                statusEl.textContent = 'กำลังนำเข้า...';
+                const response = await apiCall({ action: 'addTeacherSubjectsBulk', data: { teacherName: selectedTeacher, rows: records } });
+                if (response.success) {
+                    statusEl.className = 'text-xs mt-2 text-center text-green-600';
+                    statusEl.textContent = response.message;
+                    await loadTeacherSubjects();
+                } else {
+                    statusEl.className = 'text-xs mt-2 text-center text-red-500';
+                    statusEl.textContent = 'เกิดข้อผิดพลาด: ' + response.error;
+                }
+            } catch (err) {
+                statusEl.className = 'text-xs mt-2 text-center text-red-500';
+                statusEl.textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+            }
         }
 
         // --- STUDENT MODAL & PHOTO UPLOAD ---
