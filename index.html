@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบเช็คชื่อด้วยเทคโนโลยีใบหน้า | วิทยาลัยเทคโนโลยีอุตรดิตถ์</title>
+    <title>ระบบเช็คชื่อนักเรียนอัจฉริยะ | วิทยาลัยเทคโนโลยีอุตรดิตถ์</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -74,13 +74,13 @@
                 <i data-lucide="graduation-cap" class="w-9 h-9 text-white"></i>
             </div>
             <h1 class="text-xl md:text-2xl font-semibold text-slate-800 dark:text-gray-100">วิทยาลัยเทคโนโลยีอุตรดิตถ์</h1>
-            <p class="text-slate-500 dark:text-gray-400 text-sm mt-1">ระบบเช็คชื่อเช็คชื่อด้วยเทคโนโลยีใบหน้า &middot; กรุณาเลือกชื่ออาจารย์เพื่อเริ่มต้น</p>
+            <p class="text-slate-500 dark:text-gray-400 text-sm mt-1">ระบบเช็คชื่อนักเรียนด้วยใบหน้า &middot; กรุณาเลือกชื่ออาจารย์เพื่อเริ่มต้น</p>
         </div>
 
         <div class="w-full max-w-3xl lg:max-w-5xl bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-blue-100 dark:border-gray-700 p-5 sm:p-6 lg:p-10">
             <div class="relative mb-6">
                 <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-                <input type="text" id="teacher-search" placeholder="ค้นหาชื่ออาจารย์..." class="w-full pl-9 pr-4 py-2.5 lg:py-3 rounded-xl border border-slate-200 dark:border-gray-600 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base">
+                <input type="text" id="teacher-search" placeholder="ค้นหาชื่ออาจารย์..." class="w-full pl-9 pr-4 py-2.5 lg:py-3 rounded-xl border border-slate-200 dark:border-gray-600 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 text-sm lg:text-base">
             </div>
             <div id="teacher-groups" class="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1"></div>
             <div id="teacher-loading" class="text-center py-10">
@@ -351,13 +351,19 @@
 
         async function loadTeacherList() {
             document.getElementById('teacher-loading').classList.remove('hidden');
+            document.getElementById('teacher-groups').innerHTML = '';
             const response = await apiCall({ action: 'getTeachers' });
             document.getElementById('teacher-loading').classList.add('hidden');
             if (response.success) {
                 allTeachers = response.data;
                 renderTeacherGroups(allTeachers);
             } else {
-                document.getElementById('teacher-groups').innerHTML = `<p class="text-center text-red-500 text-sm">ไม่สามารถโหลดรายชื่ออาจารย์ได้</p>`;
+                document.getElementById('teacher-groups').innerHTML = `
+                    <div class="text-center py-4">
+                        <p class="text-red-500 text-sm font-medium mb-1">ไม่สามารถโหลดรายชื่ออาจารย์ได้</p>
+                        <p class="text-slate-400 text-xs mb-4 break-words">${response.error ? 'รายละเอียด: ' + response.error : ''}</p>
+                        <button type="button" onclick="loadTeacherList()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm">ลองอีกครั้ง</button>
+                    </div>`;
             }
         }
 
@@ -384,7 +390,7 @@
                 groups[dept].forEach(t => {
                     const btn = document.createElement('button');
                     btn.type = 'button';
-                    btn.className = 'teacher-btn bg-blue-50 hover:bg-blue-600 hover:text-white active:scale-95 text-slate-700 dark:bg-gray-700 dark:text-gray-200 text-sm lg:text-base font-medium px-3 py-2.5 lg:px-4 lg:py-3 rounded-xl border border-blue-100 dark:border-gray-600';
+                    btn.className = 'teacher-btn bg-blue-50 hover:bg-blue-400 hover:text-white active:scale-95 text-slate-700 dark:bg-gray-700 dark:text-gray-200 text-sm lg:text-base font-medium px-3 py-2.5 lg:px-4 lg:py-3 rounded-xl border border-blue-100 dark:border-gray-600';
                     btn.textContent = t.name;
                     btn.dataset.name = t.name.toLowerCase();
                     btn.onclick = () => selectTeacher(t.name);
@@ -471,7 +477,7 @@
                 teacherSubjectRows.forEach(row => {
                     const btn = document.createElement('button');
                     btn.type = 'button';
-                    btn.className = 'pair-btn text-left active:scale-95 bg-blue-50 hover:bg-blue-600 hover:text-white dark:bg-gray-700 dark:text-gray-200 rounded-xl border border-blue-100 dark:border-gray-600 p-4 text-sm lg:text-base';
+                    btn.className = 'pair-btn text-left active:scale-95 bg-blue-50 hover:bg-blue-400 hover:text-white dark:bg-gray-700 dark:text-gray-200 rounded-xl border border-blue-100 dark:border-gray-600 p-4 text-sm lg:text-base';
                     btn.innerHTML = `<span class="block text-xs opacity-70 mb-1">ห้อง ${row.class}</span><span class="block font-medium">${row.subject}</span>`;
                     btn.onclick = () => selectSubjectClass(row.class, row.subject);
                     wrap.appendChild(btn);
