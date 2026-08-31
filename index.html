@@ -873,6 +873,7 @@
             checkedInToday.clear();
     const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
     const { period: currentPeriod } = getPeriodAndStatus(new Date());
+
     const [response, attResponse] = await Promise.all([
         apiCall({ action: 'getStudents' }),
         apiCall({ action: 'getAttendance' })
@@ -914,9 +915,8 @@
     if (attResponse.success) {
         attResponse.data.forEach(rec => {
             const recDate = new Date(rec.timestamp);
-            recDate.setHours(0, 0, 0, 0);
-            
-            if (recDate.getTime() === todayStart.getTime() && 
+           
+             if (recDate.toLocaleDateString('th-TH') === todayStart.toLocaleDateString('th-TH') && 
                 classMatchesRoom(rec.class, selectedClassroom) &&
                 String(rec.subject).trim() === String(selectedSubject).trim() &&
                 String(rec.period) === String(currentPeriod)) {
@@ -1209,13 +1209,16 @@
                 });
                 btn.innerText = `บันทึกแล้ว ✓ (${records.length} คน)`;
                 setTimeout(() => { btn.innerText = originalText; }, 3000);
-                refreshDashboardData();
-            } else {
-                alert('เกิดข้อผิดพลาด: ' + (response.error || ''));
-                btn.disabled = false;
-                btn.innerText = originalText;
-            }
+                 await loadAttendanceDataForDashboard();
+        if (!document.getElementById('content-history').classList.contains('hidden')) {
+            loadAttendanceHistory();
         }
+    } else {
+        alert('เกิดข้อผิดพลาด: ' + (response.error || ''));
+        btn.disabled = false;
+        btn.innerText = originalText;
+    }
+}
 
         async function handleImportFile(event) {
             const file = event.target.files[0];
