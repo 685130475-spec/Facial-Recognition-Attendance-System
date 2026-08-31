@@ -622,25 +622,32 @@
         // --- DASHBOARD ROSTER ---
         let rosterLoadFailed = false; 
         async function loadStudentRosterForDashboard() {
-              if (!selectedClassroom || !selectedSubject) {
+                if (!selectedClassroom || !selectedSubject) {
         rosterLoadFailed = false;
-        document.getElementById('student-roster-grid').innerHTML = `<p class="col-span-full text-center text-gray-500 py-4">กรุณาเลือกห้องเรียนและวิชาสอนด้านบนก่อน เพื่อแสดงรายชื่อนักศึกษา</p>`;
+        const rosterGrid = document.getElementById('student-roster-grid');
+        if (rosterGrid) {
+            rosterGrid.innerHTML = `<p class="col-span-full text-center text-gray-500 py-4">กรุณาเลือกห้องเรียนและวิชาสอนด้านบนก่อน เพื่อแสดงรายชื่อนักศึกษา</p>`;
+        }
         const rosterLoading = document.getElementById('roster-loading');
         if (rosterLoading) rosterLoading.style.display = 'none';
         return;
     }
 
     const rosterLoading = document.getElementById('roster-loading');
-    rosterLoading.style.display = 'block';
+    if (rosterLoading) rosterLoading.style.display = 'block';
+    
     const response = await apiCall({ action: 'getStudents' });
     if (response.success) {
         rosterLoadFailed = false;
         students = response.data.filter(s => classMatchesRoom(s.class, selectedClassroom));
     } else {
         rosterLoadFailed = true;
-        document.getElementById('student-roster-grid').innerHTML = `<p class="col-span-full text-center text-red-500">โหลดข้อมูลนักศึกษาไม่สำเร็จ (${response.error || 'สัญญาณเน็ตไม่เสถียร'})</p>`;
+        const rosterGrid = document.getElementById('student-roster-grid');
+        if (rosterGrid) {
+            rosterGrid.innerHTML = `<p class="col-span-full text-center text-red-500">โหลดข้อมูลนักศึกษาไม่สำเร็จ (${response.error || 'สัญญาณเน็ตไม่เสถียร'}) กรุณากดแท็บ Dashboard ใหม่อีกครั้ง</p>`;
+        }
     }
-    rosterLoading.style.display = 'none';
+    if (rosterLoading) rosterLoading.style.display = 'none';
 }
 
         async function refreshDashboardData() {
@@ -864,56 +871,60 @@
         
         async function loadStudentDataForRecognition() {
             checkedInToday.clear();
-            const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
-            const [response, attResponse] = await Promise.all([
-                apiCall({ action: 'getStudents' }),
-                apiCall({ action: 'getAttendance' })
-            ]);
+    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+    const { period: currentPeriod } = getPeriodAndStatus(new Date());
+    const [response, attResponse] = await Promise.all([
+        apiCall({ action: 'getStudents' }),
+        apiCall({ action: 'getAttendance' })
+    ]);
 
-            if (response.success && response.data.length > 0) {
-                students = selectedClassroom ? response.data.filter(s => classMatchesRoom(s.class, selectedClassroom)) : response.data;
-                const BATCH_SIZE = 3;
-                const labeledFaceDescriptors = [];
-                const processStudent = async (student) => {
-                    if (!(student.imagedatabase64 && student.imagedatabase64.startsWith('data:image'))) return null;
-                    const sig = student.imagedatabase64.length + '_' + student.imagedatabase64.slice(-40);
-                    const cached = descriptorCache[student.studentid];
-                    if (cached && cached.sig === sig) {
-                        return cached.descriptor; 
-                    }
-                    try {
-                        const img = await faceapi.fetchImage(student.imagedatabase64);
-                        const detections = await faceapi.detectSingleFace(img, new faceapi.SsdMobilenetv1Options()).withFaceLandmarks().withFaceDescriptor();
-                        if (detections) {
-                            const labeled = new faceapi.LabeledFaceDescriptors(student.name, [detections.descriptor]);
-                            descriptorCache[student.studentid] = { sig, descriptor: labeled };
-                            return labeled;
-                        }
-                    } catch (e) { console.error(`Could not process image for ${student.name}`, e); }
-                    return null;
-                };
-                for (let i = 0; i < students.length; i += BATCH_SIZE) {
-                    const batch = students.slice(i, i + BATCH_SIZE);
-                    const results = await Promise.all(batch.map(processStudent));
-                    labeledFaceDescriptors.push(...results);
-                    await new Promise(resolve => setTimeout(resolve, 0));
-                }
-                const validDescriptors = labeledFaceDescriptors.filter(Boolean);
-                if (validDescriptors.length > 0) { faceMatcher = new faceapi.FaceMatcher(validDescriptors, 0.4); console.log('Face matcher ready.'); }
-                else { faceMatcher = null; }
-            } else { faceMatcher = null; console.log('No student data found for recognition.'); }
-
-            if (attResponse.success) {
-                attResponse.data.forEach(rec => {
-                    const recDate = new Date(rec.timestamp);
-                    recDate.setHours(0, 0, 0, 0);
-                    if (recDate.getTime() === todayStart.getTime() && classMatchesRoom(rec.class, selectedClassroom)) {
-                        checkedInToday.set(rec.id, rec);
-                    }
-                });
+    if (response.success && response.data.length > 0) {
+        students = selectedClassroom ? response.data.filter(s => classMatchesRoom(s.class, selectedClassroom)) : response.data;
+        const BATCH_SIZE = 3;
+        const labeledFaceDescriptors = [];
+        const processStudent = async (student) => {
+            if (!(student.imagedatabase64 && student.imagedatabase64.startsWith('data:image'))) return null;
+            const sig = student.imagedatabase64.length + '_' + student.imagedatabase64.slice(-40);
+            const cached = descriptorCache[student.studentid];
+            if (cached && cached.sig === sig) {
+                return cached.descriptor; 
             }
+            try {
+                const img = await faceapi.fetchImage(student.imagedatabase64);
+                const detections = await faceapi.detectSingleFace(img, new faceapi.SsdMobilenetv1Options()).withFaceLandmarks().withFaceDescriptor();
+                if (detections) {
+                    const labeled = new faceapi.LabeledFaceDescriptors(student.name, [detections.descriptor]);
+                    descriptorCache[student.studentid] = { sig, descriptor: labeled };
+                    return labeled;
+                }
+            } catch (e) { console.error(`Could not process image for ${student.name}`, e); }
+            return null;
+        };
+        for (let i = 0; i < students.length; i += BATCH_SIZE) {
+            const batch = students.slice(i, i + BATCH_SIZE);
+            const results = await Promise.all(batch.map(processStudent));
+            labeledFaceDescriptors.push(...results);
+            await new Promise(resolve => setTimeout(resolve, 0));
         }
-        
+        const validDescriptors = labeledFaceDescriptors.filter(Boolean);
+        if (validDescriptors.length > 0) { faceMatcher = new faceapi.FaceMatcher(validDescriptors, 0.4); console.log('Face matcher ready.'); }
+        else { faceMatcher = null; }
+    } else { faceMatcher = null; console.log('No student data found for recognition.'); }
+
+    if (attResponse.success) {
+        attResponse.data.forEach(rec => {
+            const recDate = new Date(rec.timestamp);
+            recDate.setHours(0, 0, 0, 0);
+            
+            if (recDate.getTime() === todayStart.getTime() && 
+                classMatchesRoom(rec.class, selectedClassroom) &&
+                String(rec.subject).trim() === String(selectedSubject).trim() &&
+                String(rec.period) === String(currentPeriod)) {
+                checkedInToday.set(rec.id, rec);
+            }
+        });
+    }
+}
         async function handleRecognition(student) {
             const now = new Date();
             const { period, status } = getPeriodAndStatus(now);
@@ -1080,15 +1091,17 @@
             tempImg.src = canvas.toDataURL('image/png');
         }
         async function loadStudentDataForTable() {
-            const response = await apiCall({ action: 'getStudents' });
-            if (response.success) {
-                students = response.data;
                 const tableBody = document.getElementById('student-table-body');
                 const cardList = document.getElementById('student-card-list');
-                tableBody.innerHTML = '';
-                cardList.innerHTML = '';
-                students.forEach(student => {
-                    const safeName = student.name.replace(/'/g, "\\'");
+
+  if (!selectedClassroom || !selectedSubject) {
+        if (tableBody) tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">กรุณาเลือกห้องเรียนและวิชาสอนด้านบนก่อน เพื่อจัดการข้อมูลนักศึกษา</td></tr>`;
+        if (cardList) cardList.innerHTML = `<p class="text-center text-gray-500 py-4">กรุณาเลือกห้องเรียนและวิชาสอนด้านบนก่อน เพื่อจัดการข้อมูลนักศึกษา</p>`;
+        const heading = document.querySelector('#content-manage h2');
+        if (heading) heading.innerText = 'จัดการข้อมูลนักศึกษา';
+        updateSaveLeaveButtonState();
+        return;
+    }
 
     const response = await apiCall({ action: 'getStudents' });
     if (response.success) {
@@ -1187,6 +1200,7 @@
                     period: period
                 };
             });
+
             const response = await apiCall({ action: 'recordAttendanceBulk', data: records });
             if (response.success) {
                 checkedBoxes.forEach(cb => {
@@ -1368,34 +1382,45 @@
                 </div>`).join('');
         }
         function renderDashboard() {
-            const selectedDate = new Date(document.getElementById('dashboard-date').value);
-            selectedDate.setHours(0,0,0,0);
-            const attendanceToday = attendance.filter(rec => { const recDate = new Date(rec.timestamp); recDate.setHours(0,0,0,0); return recDate.getTime() === selectedDate.getTime(); });
-            let onTimeCount = 0, lateCount = 0, leaveCount = 0, absentCount = 0;
-            const hourlyCounts = Array(24).fill(0);
-            const presentStudents = new Set(), leaveStudents = new Set();
-            const statusMap = {};
-            const sortedToday = [...attendanceToday].sort((a, b) => a.timestamp - b.timestamp);
-            sortedToday.forEach(rec => { statusMap[rec.id] = rec.status; });
-            attendanceToday.forEach(rec => {
-                hourlyCounts[rec.timestamp.getHours()]++;
-                if (rec.status === 'มาเรียน' || rec.status === 'สาย' || rec.status === 'มาสาย') {
-                    if (!presentStudents.has(rec.id)) {
-                        if (rec.status === 'สาย' || rec.status === 'มาสาย') lateCount++; else onTimeCount++;
-                        presentStudents.add(rec.id);
-                    }
-                } else if (rec.status === 'ลาป่วย' || rec.status === 'ลากิจ' || rec.status === 'ลา') {
-                    if (!leaveStudents.has(rec.id)) { leaveCount++; leaveStudents.add(rec.id); }
-                } else if (rec.status === 'ขาด') {
-                    absentCount++;
-                }
-            });
-            document.getElementById('stat-present').innerText = onTimeCount;
-            document.getElementById('stat-late').innerText = lateCount;
-            document.getElementById('stat-absent').innerText = leaveCount + absentCount;
-            renderPieChart(onTimeCount, lateCount, leaveCount + absentCount);
-            renderRosterGrid(statusMap); 
+                const selectedDate = new Date(document.getElementById('dashboard-date').value);
+    selectedDate.setHours(0,0,0,0);
+    const { period: currentPeriod } = getPeriodAndStatus(new Date());
+    const attendanceToday = attendance.filter(rec => { 
+    const recDate = new Date(rec.timestamp); 
+        recDate.setHours(0,0,0,0); 
+        return recDate.getTime() === selectedDate.getTime() && 
+               String(rec.subject).trim() === String(selectedSubject).trim();
+    });
+
+    let onTimeCount = 0, lateCount = 0, leaveCount = 0, absentCount = 0;
+    const hourlyCounts = Array(24).fill(0);
+    const presentStudents = new Set(), leaveStudents = new Set();
+    const statusMap = {};
+    const sortedToday = [...attendanceToday].sort((a, b) => a.timestamp - b.timestamp);
+    
+    sortedToday.forEach(rec => { statusMap[rec.id] = rec.status; });
+    
+    attendanceToday.forEach(rec => {
+        hourlyCounts[rec.timestamp.getHours()]++;
+        if (rec.status === 'มาเรียน' || rec.status === 'สาย' || rec.status === 'มาสาย') {
+            if (!presentStudents.has(rec.id)) {
+                if (rec.status === 'สาย' || rec.status === 'มาสาย') lateCount++; else onTimeCount++;
+                presentStudents.add(rec.id);
+            }
+        } else if (rec.status === 'ลาป่วย' || rec.status === 'ลากิจ' || rec.status === 'ลา') {
+            if (!leaveStudents.has(rec.id)) { leaveCount++; leaveStudents.add(rec.id); }
+        } else if (rec.status === 'ขาด') {
+            absentCount++;
         }
+    });
+    
+    document.getElementById('stat-present').innerText = onTimeCount;
+    document.getElementById('stat-late').innerText = lateCount;
+    document.getElementById('stat-absent').innerText = leaveCount + absentCount;
+    renderPieChart(onTimeCount, lateCount, leaveCount + absentCount);
+    renderRosterGrid(statusMap); 
+}
+
         function renderPieChart(onTime, late, absent) {
             const pieCanvas = document.getElementById('attendance-pie-chart');
             if (!pieCanvas) return;
