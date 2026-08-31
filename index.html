@@ -1333,10 +1333,8 @@
                 return;
             }
 
-            const fromDate = fromVal ? new Date(fromVal) : null;
-            if (fromDate) fromDate.setHours(0, 0, 0, 0);
-            const toDate = toVal ? new Date(toVal) : null;
-            if (toDate) toDate.setHours(23, 59, 59, 999);
+           let fromDate = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+    let toDate = textToVal ? new Date(textToVal + 'T23:59:59') : null;
 
             let records = response.data
                 .map(rec => ({ ...rec, timestampObj: new Date(rec.timestamp) }))
