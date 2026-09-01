@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="email=no">
+    <meta name="format-detection" content="date=no">
+    <meta name="format-detection" content="address=no">
+    <meta name="format-detection" content="url=no">
     <title>ระบบเช็คชื่อด้วยเทคโนโลยีใบหน้า</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1283,7 +1288,7 @@
             }
 
            let fromDate = fromVal ? new Date(fromVal + 'T00:00:00') : null;
-    let toDate = textToVal ? new Date(textToVal + 'T23:59:59') : null;
+    let toDate = toVal ? new Date(toVal + 'T23:59:59') : null;
 
             let records = response.data
                 .map(rec => ({ ...rec, timestampObj: new Date(rec.timestamp) }))
