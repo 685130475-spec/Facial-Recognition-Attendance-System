@@ -838,30 +838,13 @@
                     const ctx = overlay.getContext('2d');
                     ctx.clearRect(0, 0, overlay.width, overlay.height);
                     if (faceMatcher) {
-                        // สนใจเฉพาะใบหน้าที่ใหญ่ที่สุดในเฟรม (คนที่อยู่ใกล้กล้องที่สุด = คนที่กำลังสแกนจริง)
-                        // เพื่อไม่ให้คนที่ยืนอยู่ไกลๆ ด้านหลังกลายเป็น "unknown" แล้วเด้งแจ้งเตือนรบกวน
-                        const MIN_FACE_WIDTH_RATIO = 0.12; // ใบหน้าต้องกว้างอย่างน้อย 12% ของความกว้างวิดีโอ ถึงจะถือว่าเป็นคนที่กำลังสแกน
-                        const minFaceWidth = displaySize.width * MIN_FACE_WIDTH_RATIO;
-                        let primaryIndex = -1;
-                        let maxArea = 0;
-                        resizedDetections.forEach((d, i) => {
-                            const area = d.detection.box.width * d.detection.box.height;
-                            if (d.detection.box.width >= minFaceWidth && area > maxArea) {
-                                maxArea = area;
-                                primaryIndex = i;
-                            }
-                        });
-
                         const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor));
                         let hasUnknownFace = false;
                         results.forEach((result, i) => {
-                            if (i !== primaryIndex) return; // ข้ามใบหน้าพื้นหลังที่ไม่ใช่คนที่กำลังสแกน ไม่วาดกรอบ ไม่แจ้งเตือน
                             const box = resizedDetections[i].detection.box;
                             const isUnknown = result.label === 'unknown';
                             const color = isUnknown ? '#f59e0b' : '#22c55e';
-                            const matchedStudent = !isUnknown ? students.find(s => s.studentid === result.label) : null;
-                            const displayName = matchedStudent ? matchedStudent.name : result.label;
-                            const label = `${displayName} (${result.distance.toFixed(2)})`;
+                            const label = result.toString();
                             const mirroredX = overlay.width - box.x - box.width;
                             ctx.strokeStyle = color;
                             ctx.lineWidth = 2;
@@ -875,7 +858,7 @@
                             if (isUnknown) {
                                 hasUnknownFace = true;
                             } else {
-                                const student = matchedStudent;
+                                const student = students.find(s => s.name === result.label);
                                 if (student && !checkedInToday.has(student.studentid)) {
                                     handleRecognition(student);
                                 }
@@ -928,7 +911,7 @@
                 const img = await faceapi.fetchImage(student.imagedatabase64);
                 const detections = await faceapi.detectSingleFace(img, new faceapi.SsdMobilenetv1Options()).withFaceLandmarks().withFaceDescriptor();
                 if (detections) {
-                    const labeled = new faceapi.LabeledFaceDescriptors(student.studentid, [detections.descriptor]);
+                    const labeled = new faceapi.LabeledFaceDescriptors(student.name, [detections.descriptor]);
                     descriptorCache[student.studentid] = { sig, descriptor: labeled };
                     return labeled;
                 }
