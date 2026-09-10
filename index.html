@@ -651,6 +651,7 @@
     const response = await apiCall({ action: 'getStudents' });
     if (response.success) {
         rosterLoadFailed = false;
+        response.data.forEach(s => { s.studentid = String(s.studentid); });
         students = response.data.filter(s => classMatchesRoom(s.class, selectedClassroom));
         rosterLoadedForRoom = selectedClassroom;
     } else {
@@ -951,6 +952,9 @@
 
     if (response.success && response.data.length > 0) {
         const allDataFromServer = response.data;
+        // Google Sheets จะส่ง StudentID กลับมาเป็น "ตัวเลข" ถ้าคอลัมน์ถูกจัดรูปแบบเป็นตัวเลขในชีต
+        // ต้องแปลงเป็น string ให้ชัวร์ก่อน เพราะ faceapi.LabeledFaceDescriptors บังคับให้ label ต้องเป็น string เท่านั้น
+        allDataFromServer.forEach(s => { s.studentid = String(s.studentid); });
         students = selectedClassroom ? allDataFromServer.filter(s => classMatchesRoom(s.class, selectedClassroom)) : allDataFromServer;
         console.log(`[DEBUG] ห้องที่เลือก: "${selectedClassroom}" | นักศึกษาทั้งหมดในระบบ: ${allDataFromServer.length} คน | ตรงกับห้องนี้: ${students.length} คน`);
         console.log('[DEBUG] รายชื่อทั้งหมดในระบบ (ห้อง/ชั้นเรียนของแต่ละคน):', allDataFromServer.map(s => `${s.name} = "${s.class}"`));
@@ -1015,7 +1019,7 @@
                 classMatchesRoom(rec.class, selectedClassroom) &&
                 String(rec.subject).trim() === String(selectedSubject).trim() &&
                 String(rec.period) === String(currentPeriod)) {
-                checkedInToday.set(rec.id, rec);
+                checkedInToday.set(String(rec.id), rec);
             }
         });
     }
@@ -1137,6 +1141,7 @@
 
     const response = await apiCall({ action: 'getStudents' });
     if (response.success) {
+        response.data.forEach(s => { s.studentid = String(s.studentid); });
         students = response.data.filter(s => classMatchesRoom(s.class, selectedClassroom));
         const heading = document.querySelector('#content-manage h2');
         if (heading) heading.innerText = `จัดการข้อมูลนักศึกษา — ห้อง ${selectedClassroom}`;
