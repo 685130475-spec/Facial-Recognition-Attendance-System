@@ -776,9 +776,16 @@
                 clearTimeout(recognitionInterval);
                 recognitionInterval = null;
             }
+            if (videoStartWatchdog) {
+                clearInterval(videoStartWatchdog);
+                videoStartWatchdog = null;
+            }
+            videoHasStarted = false;
 
             const video = document.getElementById('video');
-            video.removeEventListener('play', onVideoPlay);
+            ['play', 'loadeddata', 'canplay', 'playing'].forEach(evt => {
+                video.removeEventListener(evt, tryStartRecognitionOnce);
+            });
             if (video.srcObject) { 
                 video.srcObject.getTracks().forEach(track => track.stop()); 
                 video.srcObject = null;
@@ -827,11 +834,35 @@
             }
         }
 
+        // ตัวช่วย "สตาร์ทระบบจดจำใบหน้า" ที่ยิงได้แค่ครั้งเดียวต่อรอบการเปิดกล้อง 1 ครั้ง
+        // (มือถือ/iPad หลายรุ่น โดยเฉพาะ Safari บน iOS ไม่ยิง event 'play' ให้เสมอไปตอนเปิดกล้องครั้งแรก
+        //  ทำให้ onVideoPlay() ไม่เคยถูกเรียก และไม่มีการตรวจจับใบหน้าเลยจนกว่าจะล็อกจอ-ปลดล็อกให้ video กลับมา "เล่นจริง"
+        //  อีกครั้งซึ่งไปกระตุ้น event 'play' ให้ยิงตอนนั้น เราเลยเช็คด้วยหลายทางพร้อมกันแทนที่จะพึ่ง event เดียว)
+        let videoStartWatchdog = null;
+        let videoHasStarted = false;
+
+        function tryStartRecognitionOnce() {
+            const video = document.getElementById('video');
+            if (videoHasStarted || !video || !video.srcObject) return;
+            if (video.readyState >= 2 && video.videoWidth > 0) {
+                videoHasStarted = true;
+                if (videoStartWatchdog) { clearInterval(videoStartWatchdog); videoStartWatchdog = null; }
+                onVideoPlay();
+            }
+        }
+
         async function startVideo() {
             const video = document.getElementById('video');
-            video.removeEventListener('play', onVideoPlay);
-            video.addEventListener('play', onVideoPlay);
-            
+            videoHasStarted = false;
+            if (videoStartWatchdog) { clearInterval(videoStartWatchdog); videoStartWatchdog = null; }
+
+            // ผูก event หลายตัวพร้อมกัน (play / loadeddata / canplay / playing) เพราะแต่ละเบราว์เซอร์/อุปกรณ์
+            // ยิง event ไม่เหมือนกันเป๊ะ ตัวไหนยิงก่อนก็ใช้ตัวนั้นเรียก tryStartRecognitionOnce() ทันที
+            ['play', 'loadeddata', 'canplay', 'playing'].forEach(evt => {
+                video.removeEventListener(evt, tryStartRecognitionOnce);
+                video.addEventListener(evt, tryStartRecognitionOnce);
+            });
+
             const videoLoadingText = document.getElementById('video-loading-text');
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'user' } } });
@@ -841,14 +872,20 @@
                 try {
                     await video.play();
                 } catch (playErr) {
-                    console.warn('video.play() ล้มเหลว จะรอ event "play" จาก autoplay แทน', playErr);
+                    console.warn('video.play() ล้มเหลว จะรอ event จาก autoplay แทน', playErr);
                 }
-                // กันไว้อีกชั้น เผื่อ event 'play' ไม่ยิงแม้ภาพจะขึ้นจริงแล้ว (readyState >= 2 คือมีข้อมูลเฟรมพอจะแสดงผล)
-                setTimeout(() => {
-                    if (video.readyState >= 2 && document.getElementById('video-loader').style.display !== 'none') {
-                        onVideoPlay();
+                // Watchdog: เช็คทุก 200ms นานสูงสุด ~15 วินาที ว่ากล้องมีเฟรมจริงหรือยัง
+                // ไม่พึ่ง event เดียวและไม่พึ่ง setTimeout ครั้งเดียวแบบเดิม เพราะบนมือถือ/iPad กล้องอาจ
+                // เริ่มส่งเฟรมช้ากว่านั้น โดยเฉพาะตอนเพิ่งขอสิทธิ์กล้องครั้งแรกของวัน
+                let watchdogTicks = 0;
+                videoStartWatchdog = setInterval(() => {
+                    watchdogTicks++;
+                    tryStartRecognitionOnce();
+                    if (videoHasStarted || watchdogTicks > 75) {
+                        clearInterval(videoStartWatchdog);
+                        videoStartWatchdog = null;
                     }
-                }, 1500);
+                }, 200);
             } catch (err) {
                 console.error('CRITICAL ERROR starting video stream:', err.name, err.message);
                 videoLoadingText.innerText = 'ไม่สามารถเปิดกล้องได้! กรุณาอนุญาตให้เว็บเข้าถึงกล้อง';
@@ -856,6 +893,14 @@
                 stopScanning(false);
             }
         }
+
+        // เมื่อสลับกลับมาที่แท็บ/ปลดล็อกจอระหว่างที่ isScanning = true แต่ระบบยังไม่เคยเริ่มจับใบหน้าได้เลย
+        // (videoHasStarted ยังเป็น false) ให้ลองเช็คซ้ำทันที กันเคสที่ watchdog ปกติถูก throttle ตอนแท็บอยู่เบื้องหลัง
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && isScanning && !videoHasStarted) {
+                tryStartRecognitionOnce();
+            }
+        });
 
         function onVideoPlay() {
             document.getElementById('video-loader').style.display = 'none';
