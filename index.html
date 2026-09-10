@@ -867,20 +867,26 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'user' } } });
                 video.srcObject = stream;
-                // บาง browser (โดยเฉพาะ Safari/iOS) ไม่เริ่มเล่นวิดีโอเองแค่ตั้ง srcObject
-                // ต้องสั่ง play() ตรงๆ ด้วย ไม่งั้นจะค้างที่หน้าจอ "กำลังเปิดกล้อง..." ทั้งที่กล้องเปิดอยู่จริง
-                try {
-                    await video.play();
-                } catch (playErr) {
-                    console.warn('video.play() ล้มเหลว จะรอ event จาก autoplay แทน', playErr);
-                }
+                // สำคัญ: "ห้าม" สั่ง video.play() เองตรงนี้ (เคยลองเพิ่มมาแล้วพังบน iOS Safari)
+                // เพราะจุดนี้มาหลัง await getUserMedia() ทำให้ browser ไม่นับว่ามาจาก user gesture แล้ว
+                // ไปชนกับ autoplay attribute บน <video> ที่กำลังพยายามเล่นอยู่แล้ว ผลคือบางทีภาพขึ้นแต่
+                // event 'play' ไม่ยิง จนกว่าจะล็อก-ปลดล็อกจอให้ระบบรีเซ็ตสถานะวิดีโอ
+                // ปล่อยให้ attribute autoplay+muted+playsinline บน <video> จัดการเล่นเองล้วนๆ เหมือนโค้ดต้นฉบับที่เคยใช้งานได้ดี
                 // Watchdog: เช็คทุก 200ms นานสูงสุด ~15 วินาที ว่ากล้องมีเฟรมจริงหรือยัง
-                // ไม่พึ่ง event เดียวและไม่พึ่ง setTimeout ครั้งเดียวแบบเดิม เพราะบนมือถือ/iPad กล้องอาจ
-                // เริ่มส่งเฟรมช้ากว่านั้น โดยเฉพาะตอนเพิ่งขอสิทธิ์กล้องครั้งแรกของวัน
+                // ไม่พึ่ง event เดียว เพราะบนมือถือ/iPad กล้องอาจเริ่มส่งเฟรมช้ากว่าปกติ
+                // โดยเฉพาะตอนเพิ่งขอสิทธิ์กล้องครั้งแรกของวัน
                 let watchdogTicks = 0;
+                let playNudgeSent = false;
                 videoStartWatchdog = setInterval(() => {
                     watchdogTicks++;
                     tryStartRecognitionOnce();
+                    // ถ้าผ่านไป ~800ms แล้ว autoplay ยังไม่มีเฟรมเลย (บาง browser ที่ไม่ auto-play
+                    // ตอนตั้ง srcObject ผ่าน JS) ค่อยลองสั่ง play() เป็นตัวช่วยแบบไม่บล็อก (ไม่ await)
+                    // หน่วงเวลาไว้ก่อนเพื่อไม่ให้ไปชนกับ autoplay ที่กำลังพยายามเล่นอยู่แล้วตอนเพิ่งเปิดกล้อง
+                    if (!playNudgeSent && !videoHasStarted && watchdogTicks === 4) {
+                        playNudgeSent = true;
+                        video.play().catch(() => {});
+                    }
                     if (videoHasStarted || watchdogTicks > 75) {
                         clearInterval(videoStartWatchdog);
                         videoStartWatchdog = null;
