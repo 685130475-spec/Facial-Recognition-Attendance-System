@@ -170,6 +170,7 @@
                                 <div class="w-[42%] aspect-[3/4] border-4 border-dashed border-white/70 rounded-[50%]"></div>
                             </div>
                             <p class="absolute bottom-2 left-0 right-0 text-center text-white/90 text-sm font-medium drop-shadow pointer-events-none">วางใบหน้าให้อยู่ในกรอบ</p>
+                            <p id="debug-status" class="absolute top-2 left-0 right-0 text-center text-yellow-300 text-xs font-mono drop-shadow pointer-events-none">กำลังเริ่มตรวจจับ...</p>
                             <div id="scan-success-overlay" class="absolute inset-0 bg-green-900 bg-opacity-80 text-white flex flex-col items-center justify-center hidden animate-fade-in text-center px-4">
                                 <span id="scan-success-name" class="text-3xl font-bold"></span>
                                 <span>&nbsp;เช็คชื่อสำเร็จ!</span>
@@ -869,11 +870,12 @@
             async function recognitionLoop() {
                 if (!isScanning) return;
                 try {
-                    const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options()).withFaceLandmarks().withFaceDescriptors();
+                    const detections = await faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 })).withFaceLandmarks().withFaceDescriptors();
                     if (!isScanning) return; 
                     const resizedDetections = faceapi.resizeResults(detections, displaySize);
                     const ctx = overlay.getContext('2d');
                     ctx.clearRect(0, 0, overlay.width, overlay.height);
+                    const debugEl = document.getElementById('debug-status');
                     if (faceMatcher) {
                         // สนใจเฉพาะใบหน้าที่ใหญ่ที่สุดในเฟรม (คนที่อยู่ใกล้กล้องที่สุด = คนที่กำลังสแกนจริง)
                         // เพื่อไม่ให้คนที่ยืนอยู่ไกลๆ ด้านหลังกลายเป็น "unknown" แล้วเด้งแจ้งเตือนรบกวน
@@ -889,6 +891,16 @@
                             }
                         });
 
+                        if (debugEl) {
+                            if (resizedDetections.length === 0) {
+                                debugEl.textContent = 'ตรวจพบใบหน้า: 0 (AI มองไม่เห็นหน้าเลย ลองปรับแสง/มุมกล้อง)';
+                            } else if (primaryIndex === -1) {
+                                const widest = Math.max(...resizedDetections.map(d => d.detection.box.width));
+                                debugEl.textContent = `ตรวจพบใบหน้า: ${resizedDetections.length} คน แต่เล็กเกินไป (กว้าง ${Math.round(widest)}px ต้องการ ≥${Math.round(minFaceWidth)}px) — ขยับเข้าใกล้กล้อง`;
+                            } else {
+                                debugEl.textContent = `ตรวจพบใบหน้า: ${resizedDetections.length} คน | กำลังจับคู่ใบหน้าหลัก...`;
+                            }
+                        }
                         const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor));
                         let hasUnknownFace = false;
                         results.forEach((result, i) => {
@@ -909,6 +921,11 @@
                             ctx.fillRect(mirroredX, box.y - 20, textWidth + 10, 20);
                             ctx.fillStyle = '#ffffff';
                             ctx.fillText(label, mirroredX + 5, box.y - 5);
+                            if (debugEl) {
+                                debugEl.textContent = isUnknown
+                                    ? `ตรวจพบใบหน้าแล้ว แต่ไม่ตรงกับใครในระบบ (ค่าความต่าง ${result.distance.toFixed(2)}, ต้อง ≤0.40 ถึงจะนับว่าใช่)`
+                                    : `เจอ: ${displayName} (ค่าความต่าง ${result.distance.toFixed(2)})`;
+                            }
                             if (isUnknown) {
                                 hasUnknownFace = true;
                             } else {
@@ -925,6 +942,8 @@
                                 showUnknownFaceOverlay();
                             }
                         }
+                    } else if (debugEl) {
+                        debugEl.textContent = 'ยังไม่มีข้อมูลใบหน้านักศึกษาที่ใช้งานได้ในห้องนี้ (faceMatcher ว่างเปล่า)';
                     }
                 } catch (e) {
                     console.error('recognition loop error:', e);
