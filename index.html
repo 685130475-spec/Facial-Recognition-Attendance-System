@@ -1376,6 +1376,7 @@
             let records = response.data
                 .map(rec => ({ ...rec, timestampObj: new Date(rec.timestamp) }))
                 .filter(rec => !selectedClassroom || classMatchesRoom(rec.class, selectedClassroom))
+                .filter(rec => !selectedSubject || String(rec.subject).trim() === String(selectedSubject).trim())
                 .filter(rec => !fromDate || rec.timestampObj >= fromDate)
                 .filter(rec => !toDate || rec.timestampObj <= toDate)
                 .filter(rec => !searchVal || (rec.name || '').toLowerCase().includes(searchVal) || (rec.id || '').toString().toLowerCase().includes(searchVal))
