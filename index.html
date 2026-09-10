@@ -626,7 +626,8 @@
         
         // --- DASHBOARD ROSTER ---
         let rosterLoadFailed = false; 
-        async function loadStudentRosterForDashboard() {
+        let rosterLoadedForRoom = null;
+        async function loadStudentRosterForDashboard(forceReload = false) {
                 if (!selectedClassroom || !selectedSubject) {
         rosterLoadFailed = false;
         const rosterGrid = document.getElementById('student-roster-grid');
@@ -638,6 +639,12 @@
         return;
     }
 
+    // รูปภาพนักศึกษาเป็นข้อมูลก้อนใหญ่และไม่ได้เปลี่ยนบ่อย ๆ ระหว่างวัน
+    // ถ้าเคยโหลดของห้องนี้มาแล้วและยังไม่ได้ถูกสั่งให้โหลดใหม่ ใช้ของเดิมที่ cache ไว้แทนการยิง API ซ้ำ
+    if (!forceReload && rosterLoadedForRoom === selectedClassroom && students.length > 0) {
+        return;
+    }
+
     const rosterLoading = document.getElementById('roster-loading');
     if (rosterLoading) rosterLoading.style.display = 'block';
     
@@ -645,6 +652,7 @@
     if (response.success) {
         rosterLoadFailed = false;
         students = response.data.filter(s => classMatchesRoom(s.class, selectedClassroom));
+        rosterLoadedForRoom = selectedClassroom;
     } else {
         rosterLoadFailed = true;
         const rosterGrid = document.getElementById('student-roster-grid');
@@ -655,19 +663,20 @@
     if (rosterLoading) rosterLoading.style.display = 'none';
 }
 
-        async function refreshDashboardData() {
-            await loadStudentRosterForDashboard();
+        async function refreshDashboardData(forceRosterReload = false) {
+            await loadStudentRosterForDashboard(forceRosterReload);
             await loadAttendanceDataForDashboard();
         }
 
-        // ทุก 1 นาที ถ้าหน้า Dashboard เปิดอยู่ ให้โหลดสถิติใหม่อัตโนมัติ
+        // ทุก 1 นาที ถ้าหน้า Dashboard เปิดอยู่ ให้โหลด "ข้อมูลการเช็คชื่อ" ใหม่อัตโนมัติ (เบา ไม่มีรูปภาพ)
+        // ไม่โหลดรายชื่อ+รูปนักศึกษาซ้ำทุกนาที เพราะเป็นข้อมูลก้อนใหญ่และไม่ค่อยเปลี่ยนระหว่างวัน
         // (renderDashboard คำนวณคาบปัจจุบันใหม่ทุกครั้งที่เรียก จึงอัปเดตตามคาบที่เปลี่ยนไปเองโดยไม่ต้องสลับแท็บ
         //  ไม่แตะแท็บ 'เช็คชื่อ' ที่กำลังสแกนอยู่ เพื่อไม่ให้ไปรบกวนกล้อง/การสแกนที่กำลังทำงาน)
         function startDashboardAutoRefresh() {
-            setInterval(() => {
+            setInterval(async () => {
                 const dashboardVisible = !document.getElementById('content-dashboard').classList.contains('hidden');
                 if (dashboardVisible) {
-                    refreshDashboardData();
+                    await loadAttendanceDataForDashboard();
                 }
             }, 60000);
         }
@@ -736,7 +745,7 @@
             lucide.createIcons();
 
             if (!faceMatcher) {
-                alert('ยังไม่มีข้อมูลใบหน้านักศึกษาในห้องนี้ กรุณาตรวจสอบว่านักศึกษาในห้อง ' + selectedClassroom + ' มีการถ่าย/อัปโหลดรูปใบหน้าไว้แล้ว")');
+                alert('ยังไม่มีข้อมูลใบหน้านักศึกษาในห้องนี้ กรุณาตรวจสอบว่านักศึกษาในห้อง ' + selectedClassroom + ' มีการถ่าย/อัปโหลดรูปใบหน้าไว้แล้ว');
                 return;
             }
             lastUnknownFaceAlert = 0;
@@ -806,12 +815,26 @@
 
         async function startVideo() {
             const video = document.getElementById('video');
+            video.removeEventListener('play', onVideoPlay);
             video.addEventListener('play', onVideoPlay);
             
             const videoLoadingText = document.getElementById('video-loading-text');
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'user' } } });
                 video.srcObject = stream;
+                // บาง browser (โดยเฉพาะ Safari/iOS) ไม่เริ่มเล่นวิดีโอเองแค่ตั้ง srcObject
+                // ต้องสั่ง play() ตรงๆ ด้วย ไม่งั้นจะค้างที่หน้าจอ "กำลังเปิดกล้อง..." ทั้งที่กล้องเปิดอยู่จริง
+                try {
+                    await video.play();
+                } catch (playErr) {
+                    console.warn('video.play() ล้มเหลว จะรอ event "play" จาก autoplay แทน', playErr);
+                }
+                // กันไว้อีกชั้น เผื่อ event 'play' ไม่ยิงแม้ภาพจะขึ้นจริงแล้ว (readyState >= 2 คือมีข้อมูลเฟรมพอจะแสดงผล)
+                setTimeout(() => {
+                    if (video.readyState >= 2 && document.getElementById('video-loader').style.display !== 'none') {
+                        onVideoPlay();
+                    }
+                }, 1500);
             } catch (err) {
                 console.error('CRITICAL ERROR starting video stream:', err.name, err.message);
                 videoLoadingText.innerText = 'ไม่สามารถเปิดกล้องได้! กรุณาอนุญาตให้เว็บเข้าถึงกล้อง';
