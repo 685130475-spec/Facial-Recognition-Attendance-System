@@ -745,7 +745,20 @@
             lucide.createIcons();
 
             if (!faceMatcher) {
-                alert('ยังไม่มีข้อมูลใบหน้านักศึกษาในห้องนี้ กรุณาตรวจสอบว่านักศึกษาในห้อง ' + selectedClassroom + ' มีการถ่าย/อัปโหลดรูปใบหน้าไว้แล้ว');
+                const dbg = window.lastRecognitionDebug || {};
+                let detail = '';
+                if (dbg.noApiData) {
+                    detail = 'สาเหตุ: เรียกข้อมูลนักศึกษาจากระบบไม่สำเร็จเลย (getStudents ล้มเหลว) ลองเช็คการเชื่อมต่อเน็ต หรือลองกดใหม่อีกครั้ง';
+                } else if (dbg.total === 0) {
+                    detail = `สาเหตุ: ไม่พบนักศึกษาที่ตรงกับห้อง "${selectedClassroom}" เลยแม้แต่คนเดียวในระบบ (ทั้งที่ระบบมีนักศึกษาทั้งหมดอยู่) แปลว่าชื่อห้องที่ตั้งไว้ตอนเลือกวิชาสอน กับค่าคอลัมน์ Class ในชีต Students สะกด/เว้นวรรคไม่ตรงกัน\n\nรายชื่อห้องที่มีอยู่จริงในระบบ:\n${(dbg.allClasses || []).slice(0, 8).join('\n')}`;
+                } else {
+                    detail = `พบนักศึกษาในห้องนี้ ${dbg.total} คน:\n- มีรูปและใช้งานได้: ${dbg.successCount} คน\n- มีรูปแต่ AI หาใบหน้าในรูปไม่เจอ: ${dbg.imageButNoFaceCount} คน\n- ไม่มีรูปเลย: ${dbg.noImageCount} คน`;
+                    if (dbg.failedNames && dbg.failedNames.length > 0) {
+                        detail += `\n\nรายชื่อที่มีปัญหา:\n${dbg.failedNames.slice(0, 10).join('\n')}`;
+                    }
+                }
+                alert('ยังไม่มีข้อมูลใบหน้านักศึกษาที่ใช้งานได้ในห้องนี้\n\n' + detail);
+                console.log('[DEBUG] รายละเอียดทั้งหมด:', dbg);
                 return;
             }
             lastUnknownFaceAlert = 0;
@@ -937,14 +950,27 @@
     ]);
 
     if (response.success && response.data.length > 0) {
-        students = selectedClassroom ? response.data.filter(s => classMatchesRoom(s.class, selectedClassroom)) : response.data;
+        const allDataFromServer = response.data;
+        students = selectedClassroom ? allDataFromServer.filter(s => classMatchesRoom(s.class, selectedClassroom)) : allDataFromServer;
+        console.log(`[DEBUG] ห้องที่เลือก: "${selectedClassroom}" | นักศึกษาทั้งหมดในระบบ: ${allDataFromServer.length} คน | ตรงกับห้องนี้: ${students.length} คน`);
+        console.log('[DEBUG] รายชื่อทั้งหมดในระบบ (ห้อง/ชั้นเรียนของแต่ละคน):', allDataFromServer.map(s => `${s.name} = "${s.class}"`));
+
         const BATCH_SIZE = 3;
         const labeledFaceDescriptors = [];
+        let noImageCount = 0, imageButNoFaceCount = 0, successCount = 0;
+        const failedNames = [];
         const processStudent = async (student) => {
-            if (!(student.imagedatabase64 && student.imagedatabase64.startsWith('data:image'))) return null;
+            if (!(student.imagedatabase64 && student.imagedatabase64.startsWith('data:image'))) {
+                noImageCount++;
+                failedNames.push(`${student.name} (ไม่มีรูปเลย)`);
+                console.log(`[DEBUG] ${student.name}: ไม่มี imagedatabase64 หรือรูปแบบไม่ถูกต้อง`);
+                return null;
+            }
+            console.log(`[DEBUG] ${student.name}: มีรูป ความยาว ${student.imagedatabase64.length} ตัวอักษร`);
             const sig = student.imagedatabase64.length + '_' + student.imagedatabase64.slice(-40);
             const cached = descriptorCache[student.studentid];
             if (cached && cached.sig === sig) {
+                successCount++;
                 return cached.descriptor; 
             }
             try {
@@ -953,9 +979,19 @@
                 if (detections) {
                     const labeled = new faceapi.LabeledFaceDescriptors(student.studentid, [detections.descriptor]);
                     descriptorCache[student.studentid] = { sig, descriptor: labeled };
+                    successCount++;
+                    console.log(`[DEBUG] ${student.name}: ประมวลผลใบหน้าสำเร็จ ✓`);
                     return labeled;
+                } else {
+                    imageButNoFaceCount++;
+                    failedNames.push(`${student.name} (มีรูปแต่ AI หาใบหน้าในรูปไม่เจอ)`);
+                    console.log(`[DEBUG] ${student.name}: มีรูปแต่ detectSingleFace ไม่เจอใบหน้าในรูปเลย (รูปอาจไม่ชัด/ไม่ใช่รูปหน้าคน/ไฟล์เสีย)`);
                 }
-            } catch (e) { console.error(`Could not process image for ${student.name}`, e); }
+            } catch (e) {
+                imageButNoFaceCount++;
+                failedNames.push(`${student.name} (error: ${e.message})`);
+                console.error(`[DEBUG] ${student.name}: เกิด error ตอนประมวลผลรูป ->`, e);
+            }
             return null;
         };
         for (let i = 0; i < students.length; i += BATCH_SIZE) {
@@ -965,9 +1001,11 @@
             await new Promise(resolve => setTimeout(resolve, 0));
         }
         const validDescriptors = labeledFaceDescriptors.filter(Boolean);
+        console.log(`[DEBUG] สรุป: มีรูปและใช้ได้ ${successCount} คน | มีรูปแต่หาหน้าไม่เจอ ${imageButNoFaceCount} คน | ไม่มีรูปเลย ${noImageCount} คน`);
+        window.lastRecognitionDebug = { total: students.length, successCount, imageButNoFaceCount, noImageCount, failedNames, selectedClassroom, allClasses: allDataFromServer.map(s => `${s.name} = "${s.class}"`) };
         if (validDescriptors.length > 0) { faceMatcher = new faceapi.FaceMatcher(validDescriptors, 0.4); console.log('Face matcher ready.'); }
         else { faceMatcher = null; }
-    } else { faceMatcher = null; console.log('No student data found for recognition.'); }
+    } else { faceMatcher = null; window.lastRecognitionDebug = { total: 0, noApiData: true }; console.log('No student data found for recognition.'); }
 
     if (attResponse.success) {
         attResponse.data.forEach(rec => {
