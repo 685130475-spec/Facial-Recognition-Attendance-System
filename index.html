@@ -776,16 +776,9 @@
                 clearTimeout(recognitionInterval);
                 recognitionInterval = null;
             }
-            if (videoStartWatchdog) {
-                clearInterval(videoStartWatchdog);
-                videoStartWatchdog = null;
-            }
-            videoHasStarted = false;
 
             const video = document.getElementById('video');
-            ['play', 'loadeddata', 'canplay', 'playing'].forEach(evt => {
-                video.removeEventListener(evt, tryStartRecognitionOnce);
-            });
+            video.removeEventListener('play', onVideoPlay);
             if (video.srcObject) { 
                 video.srcObject.getTracks().forEach(track => track.stop()); 
                 video.srcObject = null;
@@ -834,64 +827,28 @@
             }
         }
 
-        // ตัวช่วย "สตาร์ทระบบจดจำใบหน้า" ที่ยิงได้แค่ครั้งเดียวต่อรอบการเปิดกล้อง 1 ครั้ง
-        // (มือถือ/iPad หลายรุ่น โดยเฉพาะ Safari บน iOS ไม่ยิง event 'play' ให้เสมอไปตอนเปิดกล้องครั้งแรก
-        //  ทำให้ onVideoPlay() ไม่เคยถูกเรียก และไม่มีการตรวจจับใบหน้าเลยจนกว่าจะล็อกจอ-ปลดล็อกให้ video กลับมา "เล่นจริง"
-        //  อีกครั้งซึ่งไปกระตุ้น event 'play' ให้ยิงตอนนั้น เราเลยเช็คด้วยหลายทางพร้อมกันแทนที่จะพึ่ง event เดียว)
-        let videoStartWatchdog = null;
-        let videoHasStarted = false;
-
-        function tryStartRecognitionOnce() {
-            const video = document.getElementById('video');
-            if (videoHasStarted || !video || !video.srcObject) return;
-            if (video.readyState >= 2 && video.videoWidth > 0) {
-                videoHasStarted = true;
-                if (videoStartWatchdog) { clearInterval(videoStartWatchdog); videoStartWatchdog = null; }
-                onVideoPlay();
-            }
-        }
-
         async function startVideo() {
             const video = document.getElementById('video');
-            videoHasStarted = false;
-            if (videoStartWatchdog) { clearInterval(videoStartWatchdog); videoStartWatchdog = null; }
-
-            // ผูก event หลายตัวพร้อมกัน (play / loadeddata / canplay / playing) เพราะแต่ละเบราว์เซอร์/อุปกรณ์
-            // ยิง event ไม่เหมือนกันเป๊ะ ตัวไหนยิงก่อนก็ใช้ตัวนั้นเรียก tryStartRecognitionOnce() ทันที
-            ['play', 'loadeddata', 'canplay', 'playing'].forEach(evt => {
-                video.removeEventListener(evt, tryStartRecognitionOnce);
-                video.addEventListener(evt, tryStartRecognitionOnce);
-            });
-
+            video.removeEventListener('play', onVideoPlay);
+            video.addEventListener('play', onVideoPlay);
+            
             const videoLoadingText = document.getElementById('video-loading-text');
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'user' } } });
                 video.srcObject = stream;
-                // สำคัญ: "ห้าม" สั่ง video.play() เองตรงนี้ (เคยลองเพิ่มมาแล้วพังบน iOS Safari)
-                // เพราะจุดนี้มาหลัง await getUserMedia() ทำให้ browser ไม่นับว่ามาจาก user gesture แล้ว
-                // ไปชนกับ autoplay attribute บน <video> ที่กำลังพยายามเล่นอยู่แล้ว ผลคือบางทีภาพขึ้นแต่
-                // event 'play' ไม่ยิง จนกว่าจะล็อก-ปลดล็อกจอให้ระบบรีเซ็ตสถานะวิดีโอ
-                // ปล่อยให้ attribute autoplay+muted+playsinline บน <video> จัดการเล่นเองล้วนๆ เหมือนโค้ดต้นฉบับที่เคยใช้งานได้ดี
-                // Watchdog: เช็คทุก 200ms นานสูงสุด ~15 วินาที ว่ากล้องมีเฟรมจริงหรือยัง
-                // ไม่พึ่ง event เดียว เพราะบนมือถือ/iPad กล้องอาจเริ่มส่งเฟรมช้ากว่าปกติ
-                // โดยเฉพาะตอนเพิ่งขอสิทธิ์กล้องครั้งแรกของวัน
-                let watchdogTicks = 0;
-                let playNudgeSent = false;
-                videoStartWatchdog = setInterval(() => {
-                    watchdogTicks++;
-                    tryStartRecognitionOnce();
-                    // ถ้าผ่านไป ~800ms แล้ว autoplay ยังไม่มีเฟรมเลย (บาง browser ที่ไม่ auto-play
-                    // ตอนตั้ง srcObject ผ่าน JS) ค่อยลองสั่ง play() เป็นตัวช่วยแบบไม่บล็อก (ไม่ await)
-                    // หน่วงเวลาไว้ก่อนเพื่อไม่ให้ไปชนกับ autoplay ที่กำลังพยายามเล่นอยู่แล้วตอนเพิ่งเปิดกล้อง
-                    if (!playNudgeSent && !videoHasStarted && watchdogTicks === 4) {
-                        playNudgeSent = true;
-                        video.play().catch(() => {});
+                // บาง browser (โดยเฉพาะ Safari/iOS) ไม่เริ่มเล่นวิดีโอเองแค่ตั้ง srcObject
+                // ต้องสั่ง play() ตรงๆ ด้วย ไม่งั้นจะค้างที่หน้าจอ "กำลังเปิดกล้อง..." ทั้งที่กล้องเปิดอยู่จริง
+                try {
+                    await video.play();
+                } catch (playErr) {
+                    console.warn('video.play() ล้มเหลว จะรอ event "play" จาก autoplay แทน', playErr);
+                }
+                // กันไว้อีกชั้น เผื่อ event 'play' ไม่ยิงแม้ภาพจะขึ้นจริงแล้ว (readyState >= 2 คือมีข้อมูลเฟรมพอจะแสดงผล)
+                setTimeout(() => {
+                    if (video.readyState >= 2 && document.getElementById('video-loader').style.display !== 'none') {
+                        onVideoPlay();
                     }
-                    if (videoHasStarted || watchdogTicks > 75) {
-                        clearInterval(videoStartWatchdog);
-                        videoStartWatchdog = null;
-                    }
-                }, 200);
+                }, 1500);
             } catch (err) {
                 console.error('CRITICAL ERROR starting video stream:', err.name, err.message);
                 videoLoadingText.innerText = 'ไม่สามารถเปิดกล้องได้! กรุณาอนุญาตให้เว็บเข้าถึงกล้อง';
@@ -899,14 +856,6 @@
                 stopScanning(false);
             }
         }
-
-        // เมื่อสลับกลับมาที่แท็บ/ปลดล็อกจอระหว่างที่ isScanning = true แต่ระบบยังไม่เคยเริ่มจับใบหน้าได้เลย
-        // (videoHasStarted ยังเป็น false) ให้ลองเช็คซ้ำทันที กันเคสที่ watchdog ปกติถูก throttle ตอนแท็บอยู่เบื้องหลัง
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && isScanning && !videoHasStarted) {
-                tryStartRecognitionOnce();
-            }
-        });
 
         function onVideoPlay() {
             document.getElementById('video-loader').style.display = 'none';
